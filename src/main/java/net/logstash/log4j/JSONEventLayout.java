@@ -3,12 +3,9 @@ package net.logstash.log4j;
 import net.logstash.log4j.data.HostData;
 
 import java.util.*;
-import java.util.Date;
-import java.text.DateFormat;
 
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang.*;
-import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
@@ -24,9 +21,9 @@ public class JSONEventLayout extends Layout {
     private long timestamp;
     private String ndc;
     private Map mdc;
-    private List<String> thro;
     private LocationInfo info;
     private HashMap<String, Object> fieldData;
+    private HashMap<String, Object> exceptionInformation;
 
     private JSONObject logstashEvent;
 
@@ -36,6 +33,7 @@ public class JSONEventLayout extends Layout {
         timestamp = loggingEvent.getTimeStamp();
         info = loggingEvent.getLocationInformation();
         fieldData = new HashMap<String, Object>();
+        exceptionInformation = new HashMap<String, Object>();
         mdc = loggingEvent.getProperties();
         ndc = loggingEvent.getNDC();
 
@@ -46,10 +44,17 @@ public class JSONEventLayout extends Layout {
 
         if(loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
+            if(throwableInformation.getThrowable().getClass().getCanonicalName() != null){
+                exceptionInformation.put("exception_class",throwableInformation.getThrowable().getClass().getCanonicalName());
+            }
+            if(throwableInformation.getThrowable().getMessage() != null) {
+                exceptionInformation.put("exception_message",throwableInformation.getThrowable().getMessage());
+            }
             if( throwableInformation.getThrowableStrRep() != null) {
                 String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(),"\n");
-                addFieldData("stacktrace",stackTrace);
+                exceptionInformation.put("stacktrace",stackTrace);
             }
+            addFieldData("exception",exceptionInformation);
         }
 
 

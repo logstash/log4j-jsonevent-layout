@@ -49,6 +49,7 @@ public class JSONEventLayoutTest {
 
     @After
     public void clearTestAppender(){
+        NDC.clear();
         appender.clear();
         appender.close();
     }
@@ -94,6 +95,13 @@ public class JSONEventLayoutTest {
         JSONObject atFields = (JSONObject) jsonObject.get("@fields");
 
         Assert.assertEquals("NDC is wrong", ndcData, atFields.get("ndc"));
+    }
+
+    @Ignore
+    public void testJSONEventLayoutExceptions(){
+        String exceptionMessage = new String("shits on fire, yo");
+        logger.fatal("uh-oh",new IllegalArgumentException(exceptionMessage));
+        String message = appender.getMessages()[0];
     }
 
 }
