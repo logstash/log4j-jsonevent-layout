@@ -97,11 +97,18 @@ public class JSONEventLayoutTest {
         Assert.assertEquals("NDC is wrong", ndcData, atFields.get("ndc"));
     }
 
-    @Ignore
+    @Test
     public void testJSONEventLayoutExceptions(){
         String exceptionMessage = new String("shits on fire, yo");
         logger.fatal("uh-oh",new IllegalArgumentException(exceptionMessage));
         String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+        JSONObject exceptionInformation = (JSONObject) atFields.get("exception");
+
+        Assert.assertEquals("Exception class missing","java.lang.IllegalArgumentException",exceptionInformation.get("exception_class"));
+        Assert.assertEquals("Exception exception message",exceptionMessage,exceptionInformation.get("exception_message"));
     }
 
 }
