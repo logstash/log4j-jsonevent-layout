@@ -60,5 +60,33 @@ Nothing really groundbreaking here. However you can now use this same prefab Pat
 
 I'll probably be migrating my zmq-appender over to use this as well. I've already started the test cases for this but they're still short in a few places.
 
+# Exceptions
+
+If there is throwable information available in your event, it will be populated under the key `exception` in `@fields` like so:
+
+```json
+{
+    "@fields": {
+        "timestamp": 1354713757564,
+        "ndc": "json-layout-test",
+        "level": "FATAL",
+        "mdc": {},
+        "file": "JSONEventLayoutTest.java",
+        "exception": {
+            "exception_class": "java.lang.IllegalArgumentException",
+            "exception_message": "shits on fire, yo",
+            "stacktrace": "java.lang.IllegalArgumentException: shits on fire, yo\n\tat net.logstash.log4j.JSONEventLayoutTest.testJSONEventLayoutExceptions(JSONEventLayoutTest.java:102)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)\n\tat java.lang.reflect.Method.invoke(Method.java:597)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:20)\n\tat org.junit.internal.runners.statements.RunAfters.evaluate(RunAfters.java:31)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:76)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:50)\n\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)\n\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)\n\tat org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:28)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:236)\n\tat org.apache.maven.surefire.junit4.JUnit4TestSet.execute(JUnit4TestSet.java:53)\n\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:123)\n\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:104)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)\n\tat java.lang.reflect.Method.invoke(Method.java:597)\n\tat org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:164)\n\tat org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:110)\n\tat org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:175)\n\tat org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcessWhenForked(SurefireStarter.java:107)\n\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:68)"
+        },
+        "class": "net.logstash.log4j.JSONEventLayoutTest",
+        "line_number": "102",
+        "method": "testJSONEventLayoutExceptions"
+    },
+    "@message": "uh-oh",
+    "@source_host": "jvstratusmbp.local"
+}
+```
+
+Easy access to the exception class and exception message let's you work with those....easier.
+
 # Pull Requests
 Pull requests are welcome for any and all things - documentation, bug fixes...whatever.
