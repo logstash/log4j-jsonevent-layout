@@ -32,8 +32,6 @@ public class JSONEventLayoutTest {
     static final String[] logstashFields = new String[] {
             "@message",
             "@source_host",
-            "@source_path",
-            "@source",
             "@fields",
     };
 
@@ -61,7 +59,7 @@ public class JSONEventLayoutTest {
         Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
     }
 
-    @Ignore
+    @Test
     public void testJSONEventLayoutHasKeys(){
         logger.info("this is a test message");
         String message = appender.getMessages()[0];
@@ -109,6 +107,17 @@ public class JSONEventLayoutTest {
 
         Assert.assertEquals("Exception class missing","java.lang.IllegalArgumentException",exceptionInformation.get("exception_class"));
         Assert.assertEquals("Exception exception message",exceptionMessage,exceptionInformation.get("exception_message"));
+    }
+
+    @Test
+    public void testJSONEventLayoutHasClassName() {
+        logger.warn("warning dawg");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+
+        Assert.assertEquals("Logged class does not match",this.getClass().getCanonicalName().toString(),atFields.get("class"));
     }
 
 }
