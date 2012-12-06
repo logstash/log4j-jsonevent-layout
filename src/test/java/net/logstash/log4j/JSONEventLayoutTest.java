@@ -120,4 +120,15 @@ public class JSONEventLayoutTest {
         Assert.assertEquals("Logged class does not match",this.getClass().getCanonicalName().toString(),atFields.get("class"));
     }
 
+    @Test
+    public void testJSONEventHasFileName() {
+        logger.warn("whoami");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+
+        Assert.assertNotNull("File value is missing", atFields.get("file"));
+    }
+
 }

@@ -16,7 +16,7 @@ public class HostData {
         try {
             this.hostName = java.net.InetAddress.getLocalHost().getHostName();
         }catch (UnknownHostException e) {
-            this.hostName = "unknown-host";
+            setHostName("unknown-host");
         }
     }
 }
