@@ -33,6 +33,7 @@ public class JSONEventLayoutTest {
             "@message",
             "@source_host",
             "@fields",
+            "@timestamp"
     };
 
     @BeforeClass
