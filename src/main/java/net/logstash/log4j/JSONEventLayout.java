@@ -36,13 +36,13 @@ public class JSONEventLayout extends Layout {
 	 * instance per call, otherwise I'd have to pull in
 	 * joda time.
 	 */
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 	String formatted = format.format(date);
 
 	/* 
 	 * No native support for ISO8601 woo!
 	 */
-	return formatted.substring(0,22) + ":" + formatted.substring(22);
+	return formatted.substring(0,26) + ":" + formatted.substring(26);
     }
 
     public String format(LoggingEvent loggingEvent) {
