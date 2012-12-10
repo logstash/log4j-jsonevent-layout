@@ -6,11 +6,21 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>jsonevent-layout</name>
-  <url>http://maven.apache.org</url>
+  <url>http://logstash.net</url>
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+  <scm>
+    <connection>scm:git:git@github.com:git@github.com:lusis/log4j-jsonevent-layout.git</connection>
+    <developerConnection>scm:git:git@github.com:lusis/log4j-jsonevent-layout.git</developerConnection>
+    <url>git@github.com:lusis/log4j-jsonevent-layout.git</url>
+  </scm>
   <build>
     <pluginManagement>
       <plugins>
