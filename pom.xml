@@ -3,7 +3,7 @@
   <groupId>net.logstash.log4j</groupId>
   <artifactId>jsonevent-layout</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <name>jsonevent-layout</name>
   <description>Log4j pattern layout that conforms to the logstash json_event format</description>
   <url>http://logstash.net</url>
