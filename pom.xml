@@ -3,9 +3,29 @@
   <groupId>net.logstash.log4j</groupId>
   <artifactId>jsonevent-layout</artifactId>
   <packaging>jar</packaging>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <name>jsonevent-layout</name>
+  <description>Log4j pattern layout that conforms to the logstash json_event format</description>
   <url>http://logstash.net</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>lusis</id>
+      <name>John E. Vincent</name>
+      <email>lusis.org+github.com@gmail.com</email>
+    </developer>
+    <developer>
+      <id>pyr</id>
+      <name>Pierre-Yves Ritschard</name>
+      <email>pyr@spootnik.org</email>
+    </developer>
+  </developers>
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -75,7 +95,7 @@
         </executions>
       </plugin>
     </plugins>
-    </pluginManagement>
+  </pluginManagement>
   </build>
   <dependencies>
     <dependency>
@@ -101,4 +121,32 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
