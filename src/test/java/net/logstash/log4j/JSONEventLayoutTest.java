@@ -152,6 +152,8 @@ public class JSONEventLayoutTest {
         layout.setLocationInfo(prevLocationInfo);
     }
 
+    @Test
+    @Ignore
     public void measureJSONEventLayoutLocationInfoPerformance() {
         JSONEventLayout layout = (JSONEventLayout)appender.getLayout();
         boolean locationInfo = layout.getLocationInfo();
