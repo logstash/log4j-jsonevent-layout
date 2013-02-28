@@ -15,6 +15,8 @@ import org.apache.log4j.spi.LocationInfo;
 
 public class JSONEventLayout extends Layout {
 
+    private boolean locationInfo = false;
+
     private String tags;
     private boolean ignoreThrowable = false;
 
@@ -45,10 +47,26 @@ public class JSONEventLayout extends Layout {
 	return formatted.substring(0,26) + ":" + formatted.substring(26);
     }
 
+    /**
+     * For backwards compatability, the default is to generate location information
+     * in the log messages.
+     */
+    public JSONEventLayout() {
+        this(true);
+    }
+
+    /**
+     * Creates a layout that optionally inserts location information into log messages.
+     *
+     * @param locationInfo whether or not to include location information in the log messages.
+     */
+    public JSONEventLayout(boolean locationInfo) {
+        this.locationInfo = locationInfo;
+    }
+
     public String format(LoggingEvent loggingEvent) {
         hostname = new HostData().getHostName();
         timestamp = loggingEvent.getTimeStamp();
-        info = loggingEvent.getLocationInformation();
         fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
         mdc = loggingEvent.getProperties();
@@ -75,8 +93,7 @@ public class JSONEventLayout extends Layout {
             addFieldData("exception",exceptionInformation);
         }
 
-
-        if(loggingEvent.locationInformationExists()) {
+        if(locationInfo) {
             info = loggingEvent.getLocationInformation();
             addFieldData("file",info.getFileName());
             addFieldData("line_number",info.getLineNumber());
@@ -94,6 +111,24 @@ public class JSONEventLayout extends Layout {
 
     public boolean ignoresThrowable() {
         return ignoreThrowable;
+    }
+
+    /**
+     * Query whether log messages include location information.
+     *
+     * @return true if location information is included in log messages, false otherwise.
+     */
+    public boolean getLocationInfo(){
+        return locationInfo;
+    }
+
+    /**
+     * Set whether log messages should include location information.
+     *
+     * @param locationInfo true if location information should be included, false otherwise.
+     */
+    public void setLocationInfo(boolean locationInfo){
+        this.locationInfo = locationInfo;
     }
 
     public void activateOptions() {
