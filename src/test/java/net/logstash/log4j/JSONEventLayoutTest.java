@@ -1,14 +1,12 @@
 package net.logstash.log4j;
 
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
-import org.apache.log4j.NDC;
-import org.apache.log4j.MDC;
+import org.apache.log4j.*;
 
 import junit.framework.Assert;
 import org.junit.After;
@@ -130,6 +128,58 @@ public class JSONEventLayoutTest {
         JSONObject atFields = (JSONObject) jsonObject.get("@fields");
 
         Assert.assertNotNull("File value is missing", atFields.get("file"));
+    }
+
+    @Test
+    public void testJSONEventLayoutNoLocationInfo() {
+        JSONEventLayout layout = (JSONEventLayout)appender.getLayout();
+        boolean prevLocationInfo = layout.getLocationInfo();
+
+        layout.setLocationInfo(false);
+
+        logger.warn("warning dawg");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+
+        Assert.assertFalse("atFields contains file value", atFields.containsKey("file"));
+        Assert.assertFalse("atFields contains line_number value", atFields.containsKey("line_number"));
+        Assert.assertFalse("atFields contains class value", atFields.containsKey("class"));
+        Assert.assertFalse("atFields contains method value", atFields.containsKey("method"));
+
+        // Revert the change to the layout to leave it as we found it.
+        layout.setLocationInfo(prevLocationInfo);
+    }
+
+    @Test
+    @Ignore
+    public void measureJSONEventLayoutLocationInfoPerformance() {
+        JSONEventLayout layout = (JSONEventLayout)appender.getLayout();
+        boolean locationInfo = layout.getLocationInfo();
+        int iterations = 100000;
+        long start, stop;
+
+        start = System.currentTimeMillis();
+        for (int i=0; i<iterations; i++){
+            logger.warn("warning dawg");
+        }
+        stop = System.currentTimeMillis();
+        long firstMeasurement = stop - start;
+
+        layout.setLocationInfo(!locationInfo);
+        start = System.currentTimeMillis();
+        for (int i=0; i<iterations; i++){
+            logger.warn("warning dawg");
+        }
+        stop = System.currentTimeMillis();
+        long secondMeasurement = stop - start;
+
+        System.out.println("First Measurement (locationInfo: " + locationInfo +"): " + firstMeasurement);
+        System.out.println("Second Measurement (locationInfo: " + !locationInfo +"): " + secondMeasurement);
+
+        // Clean up
+        layout.setLocationInfo(!locationInfo);
     }
 
 }

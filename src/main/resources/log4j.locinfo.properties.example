@@ -1,0 +1,6 @@
+log4j.rootLogger=TRACE, stdout
+
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Threshold=TRACE
+log4j.appender.stdout.layout=net.logstash.log4j.JSONEventLayout
+log4j.appender.stdout.layout.locationInfo=true
