@@ -21,7 +21,7 @@ public class JSONEventLayout extends Layout {
     private boolean ignoreThrowable = false;
 
     private boolean activeIgnoreThrowable = ignoreThrowable;
-    private String hostname;
+    private String hostname = new HostData().getHostName();;
     private long timestamp;
     private String ndc;
     private Map mdc;
@@ -65,7 +65,6 @@ public class JSONEventLayout extends Layout {
     }
 
     public String format(LoggingEvent loggingEvent) {
-        hostname = new HostData().getHostName();
         timestamp = loggingEvent.getTimeStamp();
         fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
