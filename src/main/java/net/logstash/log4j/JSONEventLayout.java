@@ -3,7 +3,7 @@ package net.logstash.log4j;
 import net.logstash.log4j.data.HostData;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
@@ -30,9 +30,10 @@ public class JSONEventLayout extends Layout {
     private HashMap<String, Object> exceptionInformation;
 
     private JSONObject logstashEvent;
+    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
 
     public static String dateFormat(long timestamp) {
-        return DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(new Date(timestamp));
+        return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(new Date(timestamp));
     }
 
     /**
