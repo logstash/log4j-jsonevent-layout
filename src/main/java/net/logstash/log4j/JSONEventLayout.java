@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang.*;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
@@ -21,7 +22,7 @@ public class JSONEventLayout extends Layout {
     private boolean ignoreThrowable = false;
 
     private boolean activeIgnoreThrowable = ignoreThrowable;
-    private String hostname = new HostData().getHostName();;
+    private String hostname = new HostData().getHostName();
     private long timestamp;
     private String ndc;
     private Map mdc;
@@ -32,19 +33,7 @@ public class JSONEventLayout extends Layout {
     private JSONObject logstashEvent;
 
     public static String dateFormat(long timestamp) {
-	Date date = new Date(timestamp);
-	/*
-	 * SimpleDateFormat isn't thread safe so I need one 
-	 * instance per call, otherwise I'd have to pull in
-	 * joda time.
-	 */
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-	String formatted = format.format(date);
-
-	/* 
-	 * No native support for ISO8601 woo!
-	 */
-	return formatted.substring(0,26) + ":" + formatted.substring(26);
+	return DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(new Date(timestamp));
     }
 
     /**
