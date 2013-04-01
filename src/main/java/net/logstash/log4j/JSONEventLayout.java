@@ -30,16 +30,20 @@ public class JSONEventLayout extends Layout {
     private HashMap<String, Object> exceptionInformation;
 
     private JSONObject logstashEvent;
+    private static final ThreadLocal<SimpleDateFormat> THREAD_LOCAL_SDF = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        }
+    };
 
     public static String dateFormat(long timestamp) {
 	Date date = new Date(timestamp);
 	/*
-	 * SimpleDateFormat isn't thread safe so I need one 
-	 * instance per call, otherwise I'd have to pull in
-	 * joda time.
+	 * SimpleDateFormat isn't thread safe so we use a ThreadLocal,
+	 *  otherwise we'd have to pull in joda time.
 	 */
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-	String formatted = format.format(date);
+	String formatted = THREAD_LOCAL_SDF.get().format(date);
 
 	/* 
 	 * No native support for ISO8601 woo!
