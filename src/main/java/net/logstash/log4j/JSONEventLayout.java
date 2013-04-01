@@ -37,7 +37,7 @@ public class JSONEventLayout extends Layout {
     }
 
     /**
-     * For backwards compatability, the default is to generate location information
+     * For backwards compatibility, the default is to generate location information
      * in the log messages.
      */
     public JSONEventLayout() {
