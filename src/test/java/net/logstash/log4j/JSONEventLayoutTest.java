@@ -125,6 +125,16 @@ public class JSONEventLayoutTest {
     }
 
     @Test
+    public void testJSONEventHasLoggerName() {
+        logger.warn("whoami");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+        Assert.assertNotNull("LoggerName value is missing", atFields.get("loggerName"));
+    }
+
+    @Test
     public void testJSONEventLayoutNoLocationInfo() {
         JSONEventLayout layout = (JSONEventLayout) appender.getLayout();
         boolean prevLocationInfo = layout.getLocationInfo();
