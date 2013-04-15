@@ -2,17 +2,19 @@ package net.logstash.log4j;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import net.minidev.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
+/**
+ * Class to encode log4j events into logstash json event format.
+ */
 public class JSONEventLayout extends Layout {
 
     private boolean locationInfo = false;
@@ -25,8 +27,8 @@ public class JSONEventLayout extends Layout {
     private HashMap<String, Object> fieldData;
     private HashMap<String, Object> exceptionInformation;
     private JSONObject logstashEvent;
-    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
     private static String hostname;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
 
     static {
         try {
@@ -36,8 +38,14 @@ public class JSONEventLayout extends Layout {
         }
     }
 
+    /**
+     * Create a iso timestamp.
+     *
+     * @param timestamp the current timestamp in milliseconds
+     * @return the timestamp format as "yyyy-MM-dd'T'HH:mm:ss.SSSZZ"
+     */
     public static String dateFormat(long timestamp) {
-        return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(new Date(timestamp));
+        return DATE_FORMAT.format(new Date(timestamp));
     }
 
     /**
@@ -56,6 +64,9 @@ public class JSONEventLayout extends Layout {
         this.locationInfo = locationInfo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String format(LoggingEvent loggingEvent) {
         timestamp = loggingEvent.getTimeStamp();
         fieldData = new HashMap<String, Object>();
@@ -71,19 +82,25 @@ public class JSONEventLayout extends Layout {
 
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
-            if (throwableInformation.getThrowable().getClass().getCanonicalName() != null) {
-                exceptionInformation.put("exception_class", throwableInformation.getThrowable().getClass().getCanonicalName());
+            final Throwable throwable = throwableInformation.getThrowable();
+            if (throwable.getClass().getCanonicalName() != null) {
+                exceptionInformation.put("exception_class", throwable.getClass().getCanonicalName());
             }
             if (throwableInformation.getThrowable().getMessage() != null) {
-                exceptionInformation.put("exception_message", throwableInformation.getThrowable().getMessage());
+                exceptionInformation.put("exception_message", throwable.getMessage());
             }
             if (throwableInformation.getThrowableStrRep() != null) {
-                String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
+                StringBuilder stackTrace = new StringBuilder();
+                if (throwableInformation.getThrowableStrRep().length > 0) {
+                    String[] traces = throwableInformation.getThrowableStrRep();
+                    for (String trace : traces) {
+                        stackTrace.append(trace).append("\n");
+                    }
+                }
                 exceptionInformation.put("stacktrace", stackTrace);
             }
             addFieldData("exception", exceptionInformation);
         }
-
         if (locationInfo) {
             info = loggingEvent.getLocationInformation();
             addFieldData("file", info.getFileName());
@@ -92,14 +109,22 @@ public class JSONEventLayout extends Layout {
             addFieldData("method", info.getMethodName());
         }
 
-        addFieldData("mdc", mdc);
-        addFieldData("ndc", ndc);
-        addFieldData("level", loggingEvent.getLevel().toString());
+        addFieldData(
+                "mdc", mdc);
+        addFieldData(
+                "ndc", ndc);
+        addFieldData(
+                "level", loggingEvent.getLevel().toString());
 
-        logstashEvent.put("@fields", fieldData);
-        return logstashEvent.toString() + "\n";
+        logstashEvent.put(
+                "@fields", fieldData);
+        return logstashEvent.toString()
+                + "\n";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean ignoresThrowable() {
         return ignoreThrowable;
     }
@@ -122,6 +147,9 @@ public class JSONEventLayout extends Layout {
         this.locationInfo = locationInfo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;
     }
