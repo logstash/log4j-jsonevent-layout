@@ -1,6 +1,10 @@
 package net.logstash.log4j;
 
-import net.logstash.log4j.data.HostData;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -9,36 +13,35 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 public class JSONEventLayout extends Layout {
 
     private boolean locationInfo = false;
-
-    private String tags;
     private boolean ignoreThrowable = false;
-
     private boolean activeIgnoreThrowable = ignoreThrowable;
-    private String hostname = new HostData().getHostName();
     private long timestamp;
     private String ndc;
     private Map mdc;
     private LocationInfo info;
     private HashMap<String, Object> fieldData;
     private HashMap<String, Object> exceptionInformation;
-
     private JSONObject logstashEvent;
     public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+    private static String hostname;
+
+    static {
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            hostname = "unknown-host";
+        }
+    }
 
     public static String dateFormat(long timestamp) {
         return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(new Date(timestamp));
     }
 
     /**
-     * For backwards compatibility, the default is to generate location information
-     * in the log messages.
+     * For backwards compatibility, the default is to generate location information in the log messages.
      */
     public JSONEventLayout() {
         this(true);
