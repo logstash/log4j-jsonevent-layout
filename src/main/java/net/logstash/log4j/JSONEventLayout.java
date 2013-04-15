@@ -12,6 +12,9 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
+/**
+ * Class to encode log4j events into logstash json event format.
+ */
 public class JSONEventLayout extends Layout {
 
     private boolean locationInfo = false;
@@ -35,6 +38,12 @@ public class JSONEventLayout extends Layout {
         }
     }
 
+    /**
+     * Create a iso timestamp.
+     *
+     * @param timestamp the current timestamp in milliseconds
+     * @return the timestamp format as "yyyy-MM-dd'T'HH:mm:ss.SSSZZ"
+     */
     public static String dateFormat(long timestamp) {
         return DATE_FORMAT.format(new Date(timestamp));
     }
@@ -113,6 +122,9 @@ public class JSONEventLayout extends Layout {
                 + "\n";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean ignoresThrowable() {
         return ignoreThrowable;
     }
@@ -135,6 +147,9 @@ public class JSONEventLayout extends Layout {
         this.locationInfo = locationInfo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;
     }
