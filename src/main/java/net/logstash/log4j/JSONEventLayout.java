@@ -4,9 +4,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import net.minidev.json.JSONObject;
+import java.util.Map.Entry;
+import javax.json.Json;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObjectBuilder;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
@@ -20,15 +22,9 @@ public class JSONEventLayout extends Layout {
     private boolean locationInfo = false;
     private boolean ignoreThrowable = false;
     private boolean activeIgnoreThrowable = ignoreThrowable;
-    private long timestamp;
-    private String ndc;
-    private Map mdc;
-    private LocationInfo info;
-    private HashMap<String, Object> fieldData;
-    private HashMap<String, Object> exceptionInformation;
-    private JSONObject logstashEvent;
     private static String hostname;
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+    private static final JsonBuilderFactory BUILDER = Json.createBuilderFactory(null);
 
     static {
         try {
@@ -68,26 +64,54 @@ public class JSONEventLayout extends Layout {
      * {@inheritDoc}
      */
     public String format(LoggingEvent loggingEvent) {
-        timestamp = loggingEvent.getTimeStamp();
-        fieldData = new HashMap<String, Object>();
-        exceptionInformation = new HashMap<String, Object>();
-        mdc = loggingEvent.getProperties();
-        ndc = loggingEvent.getNDC();
+        long timestamp = loggingEvent.getTimeStamp();
+        JsonObjectBuilder builder = BUILDER.createObjectBuilder();
+        builder.add("@source_host", hostname);
+        builder.add("@message", loggingEvent.getRenderedMessage());
+        builder.add("@timestamp", dateFormat(timestamp));
+        builder.add(
+                "@fields", encodeFields(loggingEvent));
+        return builder.build().toString()
+                + "\n";
+    }
 
-        logstashEvent = new JSONObject();
+    /**
+     * Eoncode fields to json event section.
+     *
+     * @param loggingEvent the source
+     * @return the eoncoded field section
+     */
+    protected JsonObjectBuilder encodeFields(LoggingEvent loggingEvent) {
+        JsonObjectBuilder builder = BUILDER.createObjectBuilder();
+        if (locationInfo) {
+            LocationInfo info = loggingEvent.getLocationInformation();
+            builder.add("file", info.getFileName());
+            builder.add("line_number", info.getLineNumber());
+            builder.add("class", info.getClassName());
+            builder.add("method", info.getMethodName());
+        }
+        builder.add(
+                "mdc", encodeMap(loggingEvent.getProperties()));
+        if (loggingEvent.getNDC() != null) {
+            builder.add("ndc", loggingEvent.getNDC());
+        } else {
+            builder.add("ndc", "");
+        }
+        builder.add("level", loggingEvent.getLevel().toString());
+        builder.add("exception", encodeException(loggingEvent));
+        return builder;
+    }
 
-        logstashEvent.put("@source_host", hostname);
-        logstashEvent.put("@message", loggingEvent.getRenderedMessage());
-        logstashEvent.put("@timestamp", dateFormat(timestamp));
-
+    protected JsonObjectBuilder encodeException(LoggingEvent loggingEvent) {
+        JsonObjectBuilder builder = BUILDER.createObjectBuilder();
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
             final Throwable throwable = throwableInformation.getThrowable();
             if (throwable.getClass().getCanonicalName() != null) {
-                exceptionInformation.put("exception_class", throwable.getClass().getCanonicalName());
+                builder.add("exception_class", throwable.getClass().getCanonicalName());
             }
             if (throwableInformation.getThrowable().getMessage() != null) {
-                exceptionInformation.put("exception_message", throwable.getMessage());
+                builder.add("exception_message", throwable.getMessage());
             }
             if (throwableInformation.getThrowableStrRep() != null) {
                 StringBuilder stackTrace = new StringBuilder();
@@ -97,29 +121,24 @@ public class JSONEventLayout extends Layout {
                         stackTrace.append(trace).append("\n");
                     }
                 }
-                exceptionInformation.put("stacktrace", stackTrace);
+                builder.add("stacktrace", stackTrace.toString());
             }
-            addFieldData("exception", exceptionInformation);
         }
-        if (locationInfo) {
-            info = loggingEvent.getLocationInformation();
-            addFieldData("file", info.getFileName());
-            addFieldData("line_number", info.getLineNumber());
-            addFieldData("class", info.getClassName());
-            addFieldData("method", info.getMethodName());
+        return builder;
+    }
+
+    /**
+     * Convert a map into a json object.
+     *
+     * @param map the map to convert
+     * @return a json object
+     */
+    protected JsonObjectBuilder encodeMap(Map<String, Object> map) {
+        JsonObjectBuilder builder = BUILDER.createObjectBuilder();
+        for (Entry<String, Object> entry : map.entrySet()) {
+            builder.add(entry.getKey(), entry.getValue().toString());
         }
-
-        addFieldData(
-                "mdc", mdc);
-        addFieldData(
-                "ndc", ndc);
-        addFieldData(
-                "level", loggingEvent.getLevel().toString());
-
-        logstashEvent.put(
-                "@fields", fieldData);
-        return logstashEvent.toString()
-                + "\n";
+        return builder;
     }
 
     /**
@@ -152,11 +171,5 @@ public class JSONEventLayout extends Layout {
      */
     public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;
-    }
-
-    private void addFieldData(String keyname, Object keyval) {
-        if (null != keyval) {
-            fieldData.put(keyname, keyval);
-        }
     }
 }
