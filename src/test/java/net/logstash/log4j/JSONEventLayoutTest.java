@@ -31,7 +31,7 @@ public class JSONEventLayoutTest {
     public static final long TIMESTAMP = 1364844991207L;
 
     /**
-     * Setup MockAppender
+     * Setup MockAppender.
      */
     @BeforeClass
     public static void setupTestAppender() {
@@ -44,7 +44,7 @@ public class JSONEventLayoutTest {
     }
 
     /**
-     * Clear MockAppender
+     * Clear MockAppender.
      */
     @After
     public void clearTestAppender() {
@@ -54,7 +54,7 @@ public class JSONEventLayoutTest {
     }
 
     /**
-     * Test if JSON API produces correct JSON
+     * Test if JSON API produces correct JSON.
      */
     @Test
     public void testJSONEventLayoutIsJSON() {
