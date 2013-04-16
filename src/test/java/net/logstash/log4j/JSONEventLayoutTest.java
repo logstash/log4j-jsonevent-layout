@@ -233,9 +233,6 @@ public class JSONEventLayoutTest {
     }
 
     private JsonObject createObject(String input) {
-
-        System.out.println(input);
-
         JsonReader reader = parser.createReader(new StringReader(input));
         return reader.readObject();
     }
