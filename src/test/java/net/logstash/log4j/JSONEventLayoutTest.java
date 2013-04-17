@@ -1,21 +1,16 @@
 package net.logstash.log4j;
 
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-
-import org.apache.log4j.*;
-
 import junit.framework.Assert;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Ignore;
-
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
+import org.apache.log4j.PatternLayout;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +22,7 @@ import net.minidev.json.JSONValue;
 public class JSONEventLayoutTest {
     static Logger logger;
     static MockAppender appender;
-    static final String[] logstashFields = new String[] {
+    static final String[] logstashFields = new String[]{
             "@message",
             "@source_host",
             "@fields",
@@ -35,7 +30,7 @@ public class JSONEventLayoutTest {
     };
 
     @BeforeClass
-    public static void setupTestAppender(){
+    public static void setupTestAppender() {
         appender = new MockAppender(new JSONEventLayout());
         logger = Logger.getRootLogger();
         appender.setThreshold(Level.TRACE);
@@ -45,7 +40,7 @@ public class JSONEventLayoutTest {
     }
 
     @After
-    public void clearTestAppender(){
+    public void clearTestAppender() {
         NDC.clear();
         appender.clear();
         appender.close();
@@ -54,24 +49,24 @@ public class JSONEventLayoutTest {
     @Test
     public void testJSONEventLayoutIsJSON() {
         logger.info("this is an info message");
-        String  message = appender.getMessages()[0];
+        String message = appender.getMessages()[0];
         Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
     }
 
     @Test
-    public void testJSONEventLayoutHasKeys(){
+    public void testJSONEventLayoutHasKeys() {
         logger.info("this is a test message");
         String message = appender.getMessages()[0];
         Object obj = JSONValue.parse(message);
         JSONObject jsonObject = (JSONObject) obj;
 
-        for(String fieldName : logstashFields){
+        for (String fieldName : logstashFields) {
             Assert.assertTrue("Event does not contain field: " + fieldName, jsonObject.containsKey(fieldName));
         }
     }
 
     @Test
-    public void testJSONEventLayoutHasFieldLevel(){
+    public void testJSONEventLayoutHasFieldLevel() {
         logger.fatal("this is a new test message");
         String message = appender.getMessages()[0];
         Object obj = JSONValue.parse(message);
@@ -82,7 +77,7 @@ public class JSONEventLayoutTest {
     }
 
     @Test
-    public void testJSONEventLayoutHasNDC(){
+    public void testJSONEventLayoutHasNDC() {
         String ndcData = new String("json-layout-test");
         NDC.push(ndcData);
         logger.warn("I should have NDC data in my log");
@@ -95,17 +90,17 @@ public class JSONEventLayoutTest {
     }
 
     @Test
-    public void testJSONEventLayoutExceptions(){
+    public void testJSONEventLayoutExceptions() {
         String exceptionMessage = new String("shits on fire, yo");
-        logger.fatal("uh-oh",new IllegalArgumentException(exceptionMessage));
+        logger.fatal("uh-oh", new IllegalArgumentException(exceptionMessage));
         String message = appender.getMessages()[0];
         Object obj = JSONValue.parse(message);
         JSONObject jsonObject = (JSONObject) obj;
         JSONObject atFields = (JSONObject) jsonObject.get("@fields");
         JSONObject exceptionInformation = (JSONObject) atFields.get("exception");
 
-        Assert.assertEquals("Exception class missing","java.lang.IllegalArgumentException",exceptionInformation.get("exception_class"));
-        Assert.assertEquals("Exception exception message",exceptionMessage,exceptionInformation.get("exception_message"));
+        Assert.assertEquals("Exception class missing", "java.lang.IllegalArgumentException", exceptionInformation.get("exception_class"));
+        Assert.assertEquals("Exception exception message", exceptionMessage, exceptionInformation.get("exception_message"));
     }
 
     @Test
@@ -116,7 +111,7 @@ public class JSONEventLayoutTest {
         JSONObject jsonObject = (JSONObject) obj;
         JSONObject atFields = (JSONObject) jsonObject.get("@fields");
 
-        Assert.assertEquals("Logged class does not match",this.getClass().getCanonicalName().toString(),atFields.get("class"));
+        Assert.assertEquals("Logged class does not match", this.getClass().getCanonicalName().toString(), atFields.get("class"));
     }
 
     @Test
@@ -132,7 +127,7 @@ public class JSONEventLayoutTest {
 
     @Test
     public void testJSONEventLayoutNoLocationInfo() {
-        JSONEventLayout layout = (JSONEventLayout)appender.getLayout();
+        JSONEventLayout layout = (JSONEventLayout) appender.getLayout();
         boolean prevLocationInfo = layout.getLocationInfo();
 
         layout.setLocationInfo(false);
@@ -155,13 +150,13 @@ public class JSONEventLayoutTest {
     @Test
     @Ignore
     public void measureJSONEventLayoutLocationInfoPerformance() {
-        JSONEventLayout layout = (JSONEventLayout)appender.getLayout();
+        JSONEventLayout layout = (JSONEventLayout) appender.getLayout();
         boolean locationInfo = layout.getLocationInfo();
         int iterations = 100000;
         long start, stop;
 
         start = System.currentTimeMillis();
-        for (int i=0; i<iterations; i++){
+        for (int i = 0; i < iterations; i++) {
             logger.warn("warning dawg");
         }
         stop = System.currentTimeMillis();
@@ -169,7 +164,7 @@ public class JSONEventLayoutTest {
 
         layout.setLocationInfo(!locationInfo);
         start = System.currentTimeMillis();
-        for (int i=0; i<iterations; i++){
+        for (int i = 0; i < iterations; i++) {
             logger.warn("warning dawg");
         }
         stop = System.currentTimeMillis();
@@ -200,4 +195,10 @@ public class JSONEventLayoutTest {
         layout.setLocationInfo(!locationInfo);
     }
 
+    @Test
+    @Ignore
+    public void testDateFormat() {
+        long timestamp = 1364844991207L;
+        Assert.assertEquals("format does not produce expected output", "2013-04-01T21:36:31.207+02:00", JSONEventLayout.dateFormat(timestamp));
+    }
 }
