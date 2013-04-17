@@ -175,8 +175,26 @@ public class JSONEventLayoutTest {
         stop = System.currentTimeMillis();
         long secondMeasurement = stop - start;
 
-        System.out.println("First Measurement (locationInfo: " + locationInfo +"): " + firstMeasurement);
-        System.out.println("Second Measurement (locationInfo: " + !locationInfo +"): " + secondMeasurement);
+        appender.setLayout(new PatternLayout("%-5p [%t]: %m%n"));
+        start = System.currentTimeMillis();
+        for (int i=0; i<iterations; i++){
+            logger.warn("warning dawg");
+        }
+        stop = System.currentTimeMillis();
+        long thirdMeasurement = stop - start;
+
+        appender.setLayout(new PatternLayout("%-5p %l [%t]: %m%n"));
+        start = System.currentTimeMillis();
+        for (int i=0; i<iterations; i++){
+            logger.warn("warning dawg");
+        }
+        stop = System.currentTimeMillis();
+        long fourthMeasurement = stop - start;
+
+        System.out.println("JSONEventLayout (locationInfo: " + locationInfo +"): " + firstMeasurement);
+        System.out.println("JSONEventLayout (locationInfo: " + !locationInfo +"): " + secondMeasurement);
+        System.out.println("PatternLayout (%-5p [%t]: %m%n): " + thirdMeasurement);
+        System.out.println("PatternLayout (%-5p %l [%t]: %m%n): " + fourthMeasurement);
 
         // Clean up
         layout.setLocationInfo(!locationInfo);

@@ -1,12 +1,16 @@
 package net.logstash.log4j;
 
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.logstash.log4j.data.HostData;
 
 import java.util.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import net.minidev.json.JSONObject;
+//import net.minidev.json.JSONObject;
+
 import org.apache.commons.lang.*;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
@@ -14,6 +18,8 @@ import org.apache.log4j.spi.ThrowableInformation;
 import org.apache.log4j.spi.LocationInfo;
 
 public class JSONEventLayout extends Layout {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper().configure(Feature.ESCAPE_NON_ASCII, true);
 
     private boolean locationInfo = false;
 
@@ -24,12 +30,12 @@ public class JSONEventLayout extends Layout {
     private String hostname;
     private long timestamp;
     private String ndc;
-    private Map mdc;
+    private Map<String, String> mdc;
     private LocationInfo info;
     private HashMap<String, Object> fieldData;
     private HashMap<String, Object> exceptionInformation;
 
-    private JSONObject logstashEvent;
+    //private JSONObject logstashEvent;
 
     public static String dateFormat(long timestamp) {
 	Date date = new Date(timestamp);
@@ -72,41 +78,57 @@ public class JSONEventLayout extends Layout {
         mdc = loggingEvent.getProperties();
         ndc = loggingEvent.getNDC();
 
-        logstashEvent = new JSONObject();
+        //logstashEvent = new JSONObject();
+        ObjectNode eventNode = MAPPER.createObjectNode();
 
-        logstashEvent.put("@source_host",hostname);
-        logstashEvent.put("@message",loggingEvent.getRenderedMessage());
-        logstashEvent.put("@timestamp",dateFormat(timestamp));
+
+
+        eventNode.put("@source_host",hostname);
+        eventNode.put("@message",loggingEvent.getRenderedMessage());
+        eventNode.put("@timestamp",dateFormat(timestamp));
+        ObjectNode fieldsNode = MAPPER.createObjectNode();
+        eventNode.put("@fields", fieldsNode);
 
         if(loggingEvent.getThrowableInformation() != null) {
+            ObjectNode exceptionNode = MAPPER.createObjectNode();
+
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
             if(throwableInformation.getThrowable().getClass().getCanonicalName() != null){
-                exceptionInformation.put("exception_class",throwableInformation.getThrowable().getClass().getCanonicalName());
+                exceptionNode.put("exception_class", throwableInformation.getThrowable().getClass().getCanonicalName());
             }
             if(throwableInformation.getThrowable().getMessage() != null) {
-                exceptionInformation.put("exception_message",throwableInformation.getThrowable().getMessage());
+                exceptionNode.put("exception_message", throwableInformation.getThrowable().getMessage());
             }
             if( throwableInformation.getThrowableStrRep() != null) {
                 String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(),"\n");
-                exceptionInformation.put("stacktrace",stackTrace);
+                exceptionNode.put("stacktrace", stackTrace);
             }
-            addFieldData("exception",exceptionInformation);
+            fieldsNode.put("exception", exceptionNode);
         }
 
         if(locationInfo) {
             info = loggingEvent.getLocationInformation();
-            addFieldData("file",info.getFileName());
-            addFieldData("line_number",info.getLineNumber());
-            addFieldData("class",info.getClassName());
-            addFieldData("method",info.getMethodName());
+            fieldsNode.put("file", info.getFileName());
+            fieldsNode.put("line_number", info.getLineNumber());
+            fieldsNode.put("class", info.getClassName());
+            fieldsNode.put("method", info.getMethodName());
         }
 
-        addFieldData("mdc",mdc);
-        addFieldData("ndc",ndc);
-        addFieldData("level",loggingEvent.getLevel().toString());
+        //fieldsNode.put("mdc",mdc);
+        ObjectNode mdcNode = MAPPER.createObjectNode();
+        for (Map.Entry<String, String> entry : mdc.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            mdcNode.put(key, value);
+        }
 
-        logstashEvent.put("@fields",fieldData);
-        return logstashEvent.toString() + "\n";
+
+        fieldsNode.put("ndc",ndc);
+        fieldsNode.put("level", loggingEvent.getLevel().toString());
+
+        //eventNode.put("@fields", fieldData);
+        //return logstashEvent.toString() + "\n";
+        return eventNode.toString();
     }
 
     public boolean ignoresThrowable() {
