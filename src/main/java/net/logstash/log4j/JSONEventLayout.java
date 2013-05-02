@@ -22,6 +22,7 @@ public class JSONEventLayout extends Layout {
 
     private boolean activeIgnoreThrowable = ignoreThrowable;
     private String hostname = new HostData().getHostName();
+    private String threadName;
     private long timestamp;
     private String ndc;
     private Map mdc;
@@ -54,6 +55,7 @@ public class JSONEventLayout extends Layout {
     }
 
     public String format(LoggingEvent loggingEvent) {
+        threadName = loggingEvent.getThreadName():
         timestamp = loggingEvent.getTimeStamp();
         fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
@@ -64,6 +66,7 @@ public class JSONEventLayout extends Layout {
 
         logstashEvent.put("@source_host", hostname);
         logstashEvent.put("@message", loggingEvent.getRenderedMessage());
+        logstashEvent.put("@threadName", threadName);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
 
         if (loggingEvent.getThrowableInformation() != null) {
