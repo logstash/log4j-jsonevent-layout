@@ -55,7 +55,7 @@ public class JSONEventLayout extends Layout {
     }
 
     public String format(LoggingEvent loggingEvent) {
-        threadName = loggingEvent.getThreadName():
+        threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
         fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
