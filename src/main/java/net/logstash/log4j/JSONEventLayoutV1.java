@@ -1,7 +1,8 @@
 package net.logstash.log4j;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.logstash.log4j.data.HostData;
-import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Layout;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 public class JSONEventLayoutV1 extends Layout {
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     private boolean locationInfo = false;
     private String customUserFields;
@@ -32,7 +34,7 @@ public class JSONEventLayoutV1 extends Layout {
     private static Integer version = 1;
 
 
-    private JSONObject logstashEvent;
+    private Map logstashEvent;
 
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
     public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
@@ -66,7 +68,7 @@ public class JSONEventLayoutV1 extends Layout {
         mdc = loggingEvent.getProperties();
         ndc = loggingEvent.getNDC();
 
-        logstashEvent = new JSONObject();
+        logstashEvent = new HashMap();
         String whoami = this.getClass().getSimpleName();
 
         /**
@@ -134,7 +136,15 @@ public class JSONEventLayoutV1 extends Layout {
         addEventData("level", loggingEvent.getLevel().toString());
         addEventData("thread_name", threadName);
 
-        return logstashEvent.toString() + "\n";
+        return safeString(logstashEvent) + "\n";
+    }
+
+    private String safeString(final Map map) {
+        try {
+            return JSON.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
     }
 
     public boolean ignoresThrowable() {
