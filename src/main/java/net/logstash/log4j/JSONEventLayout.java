@@ -66,7 +66,6 @@ public class JSONEventLayout extends Layout {
 
         logstashEvent.put("@source_host", hostname);
         logstashEvent.put("@message", loggingEvent.getRenderedMessage());
-        logstashEvent.put("@threadName", threadName);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
 
         if (loggingEvent.getThrowableInformation() != null) {
@@ -95,6 +94,7 @@ public class JSONEventLayout extends Layout {
         addFieldData("mdc", mdc);
         addFieldData("ndc", ndc);
         addFieldData("level", loggingEvent.getLevel().toString());
+        addFieldData("threadName", threadName);
 
         logstashEvent.put("@fields", fieldData);
         return logstashEvent.toString() + "\n";
