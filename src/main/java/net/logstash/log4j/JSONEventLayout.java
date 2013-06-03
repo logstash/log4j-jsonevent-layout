@@ -89,6 +89,7 @@ public class JSONEventLayout extends Layout {
             addFieldData("method", info.getMethodName());
         }
 
+        addFieldData("loggerName", loggingEvent.getLoggerName());
         addFieldData("mdc", mdc);
         addFieldData("ndc", ndc);
         addFieldData("level", loggingEvent.getLevel().toString());
