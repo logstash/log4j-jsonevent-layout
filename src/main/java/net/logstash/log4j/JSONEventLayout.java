@@ -22,6 +22,7 @@ public class JSONEventLayout extends Layout {
 
     private boolean activeIgnoreThrowable = ignoreThrowable;
     private String hostname = new HostData().getHostName();
+    private String threadName;
     private long timestamp;
     private String ndc;
     private Map mdc;
@@ -54,6 +55,7 @@ public class JSONEventLayout extends Layout {
     }
 
     public String format(LoggingEvent loggingEvent) {
+        threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
         fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
@@ -93,6 +95,7 @@ public class JSONEventLayout extends Layout {
         addFieldData("mdc", mdc);
         addFieldData("ndc", ndc);
         addFieldData("level", loggingEvent.getLevel().toString());
+        addFieldData("threadName", threadName);
 
         logstashEvent.put("@fields", fieldData);
         return logstashEvent.toString() + "\n";
