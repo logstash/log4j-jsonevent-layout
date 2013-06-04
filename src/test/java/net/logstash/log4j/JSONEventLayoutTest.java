@@ -135,6 +135,16 @@ public class JSONEventLayoutTest {
     }
 
     @Test
+    public void testJSONEventHasThreadName() {
+        logger.warn("whoami");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+        Assert.assertNotNull("ThreadName value is missing", atFields.get("threadName"));
+    }
+
+    @Test
     public void testJSONEventLayoutNoLocationInfo() {
         JSONEventLayout layout = (JSONEventLayout) appender.getLayout();
         boolean prevLocationInfo = layout.getLocationInfo();
