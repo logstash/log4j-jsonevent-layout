@@ -12,6 +12,7 @@ import org.apache.log4j.spi.ThrowableInformation;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class JSONEventLayout extends Layout {
 
@@ -31,10 +32,12 @@ public class JSONEventLayout extends Layout {
     private HashMap<String, Object> exceptionInformation;
 
     private JSONObject logstashEvent;
-    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+
+    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
 
     public static String dateFormat(long timestamp) {
-        return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(new Date(timestamp));
+        return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(timestamp);
     }
 
     /**
