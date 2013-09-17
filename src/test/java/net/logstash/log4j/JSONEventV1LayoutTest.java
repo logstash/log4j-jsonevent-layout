@@ -180,9 +180,8 @@ public class JSONEventV1LayoutTest {
     }
 
     @Test
-    @Ignore
     public void testDateFormat() {
         long timestamp = 1364844991207L;
-        Assert.assertEquals("format does not produce expected output", "2013-04-01T21:36:31.207+02:00", JSONEventLayoutV1.dateFormat(timestamp));
+        Assert.assertEquals("format does not produce expected output", "2013-04-01T19:36:31.207Z", JSONEventLayoutV1.dateFormat(timestamp));
     }
 }
