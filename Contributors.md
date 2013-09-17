@@ -4,3 +4,4 @@
 - @StFS (Stefán Freyr Stefánsson)
 - @looztra (Christophe Furmaniak)
 - @astrochoupe
+- @bfritz (Brad Fritz)
