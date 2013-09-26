@@ -2,4 +2,4 @@ log4j.RootCategory=TRACE, Console
 
 log4j.appender.Console=org.apache.log4j.ConsoleAppender
 log4j.appender.Console.Threshold=TRACE
-log4j.appender.Console.layout=net.logstash.log4j.JSONEventLayoutV1
+log4j.appender.Console.layout=net.logstash.log4j.JSONEventLayoutV0

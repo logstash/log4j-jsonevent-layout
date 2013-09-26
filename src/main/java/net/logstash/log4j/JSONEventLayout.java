@@ -28,8 +28,8 @@ public class JSONEventLayout extends Layout {
     private String ndc;
     private Map mdc;
     private LocationInfo info;
-    private HashMap<String, Object> fieldData;
     private HashMap<String, Object> exceptionInformation;
+    private static Integer version = 1;
 
     private JSONObject logstashEvent;
 
@@ -60,16 +60,25 @@ public class JSONEventLayout extends Layout {
     public String format(LoggingEvent loggingEvent) {
         threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
-        fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
         mdc = loggingEvent.getProperties();
         ndc = loggingEvent.getNDC();
 
         logstashEvent = new JSONObject();
 
-        logstashEvent.put("@source_host", hostname);
-        logstashEvent.put("@message", loggingEvent.getRenderedMessage());
+        /**
+         * All v1 of the event format requires is
+         * "@timestamp" and "@version"
+         * Every other field is arbitrary
+         */
+        logstashEvent.put("@version", version);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
+
+        /**
+         * Now we start injecting our own stuff.
+         */
+        logstashEvent.put("source_host", hostname);
+        logstashEvent.put("message", loggingEvent.getRenderedMessage());
 
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
@@ -83,24 +92,23 @@ public class JSONEventLayout extends Layout {
                 String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
                 exceptionInformation.put("stacktrace", stackTrace);
             }
-            addFieldData("exception", exceptionInformation);
+            addEventData("exception", exceptionInformation);
         }
 
         if (locationInfo) {
             info = loggingEvent.getLocationInformation();
-            addFieldData("file", info.getFileName());
-            addFieldData("line_number", info.getLineNumber());
-            addFieldData("class", info.getClassName());
-            addFieldData("method", info.getMethodName());
+            addEventData("file", info.getFileName());
+            addEventData("line_number", info.getLineNumber());
+            addEventData("class", info.getClassName());
+            addEventData("method", info.getMethodName());
         }
 
-        addFieldData("loggerName", loggingEvent.getLoggerName());
-        addFieldData("mdc", mdc);
-        addFieldData("ndc", ndc);
-        addFieldData("level", loggingEvent.getLevel().toString());
-        addFieldData("threadName", threadName);
+        addEventData("logger_name", loggingEvent.getLoggerName());
+        addEventData("mdc", mdc);
+        addEventData("ndc", ndc);
+        addEventData("level", loggingEvent.getLevel().toString());
+        addEventData("thread_name", threadName);
 
-        logstashEvent.put("@fields", fieldData);
         return logstashEvent.toString() + "\n";
     }
 
@@ -130,9 +138,9 @@ public class JSONEventLayout extends Layout {
         activeIgnoreThrowable = ignoreThrowable;
     }
 
-    private void addFieldData(String keyname, Object keyval) {
+    private void addEventData(String keyname, Object keyval) {
         if (null != keyval) {
-            fieldData.put(keyname, keyval);
+            logstashEvent.put(keyname, keyval);
         }
     }
 }
