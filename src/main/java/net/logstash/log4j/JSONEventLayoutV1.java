@@ -19,6 +19,7 @@ public class JSONEventLayoutV1 extends Layout {
     private boolean locationInfo = false;
 
     private String tags = "";
+    private String logstashType = "default";
     private boolean ignoreThrowable = false;
 
     private boolean activeIgnoreThrowable = ignoreThrowable;
@@ -79,6 +80,7 @@ public class JSONEventLayoutV1 extends Layout {
          */
         logstashEvent.put("source_host", hostname);
         logstashEvent.put("message", loggingEvent.getRenderedMessage());
+        logstashEvent.put("type", logstashType);
         if (!tags.isEmpty()) {
             logstashEvent.put("tags", tags.split(","));
         }
@@ -145,7 +147,15 @@ public class JSONEventLayoutV1 extends Layout {
 		this.tags = tags;
 	}
 
-    public void activateOptions() {
+    public String getLogstashType() {
+		return logstashType;
+	}
+
+	public void setLogstashType(String logstashType) {
+		this.logstashType = logstashType;
+	}
+
+	public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;
     }
 
