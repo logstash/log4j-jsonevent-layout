@@ -25,7 +25,7 @@ public class JSONEventV1LayoutTest {
     static MockAppenderV1 appender;
     static final String[] logstashFields = new String[]{
             "message",
-            "source_host",
+            "host",
             "@timestamp",
             "@version"
     };
