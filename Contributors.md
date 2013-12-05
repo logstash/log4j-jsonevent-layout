@@ -5,3 +5,4 @@
 - @looztra (Christophe Furmaniak)
 - @astrochoupe
 - @bfritz (Brad Fritz)
+- @vrivellino (Vincent R.)
