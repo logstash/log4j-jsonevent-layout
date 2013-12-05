@@ -35,6 +35,7 @@ public class JSONEventLayoutV1 extends Layout {
 
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
     public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
+    private static final String ADDITIONAL_DATA_PROPERTY = "net.logstash.log4j.JSONEventLayoutV1.UserFields";
 
     public static String dateFormat(long timestamp) {
         return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(timestamp);
@@ -73,6 +74,22 @@ public class JSONEventLayoutV1 extends Layout {
          */
         logstashEvent.put("@version", version);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
+
+        /**
+         * Extract fields from system properties, if defined
+         */
+        if (System.getProperty(ADDITIONAL_DATA_PROPERTY) != null) {
+            String userFields = System.getProperty(ADDITIONAL_DATA_PROPERTY);
+            String[] pairs = userFields.split(",");
+            for (String pair : pairs) {
+                String[] userField = pair.split(":", 2);
+                if (userField.length == 1 && userField[0] != null) {
+                    logstashEvent.put(userField[0], "");
+                } else if (userField.length == 2 && userField[0] != null && userField[1] != null) {
+                    logstashEvent.put(userField[0], userField[1]);
+                }
+            }
+        }
 
         /**
          * Now we start injecting our own stuff.
