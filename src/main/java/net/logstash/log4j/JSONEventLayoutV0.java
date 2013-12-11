@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class JSONEventLayout extends Layout {
+public class JSONEventLayoutV0 extends Layout {
 
     private boolean locationInfo = false;
 
@@ -28,8 +28,8 @@ public class JSONEventLayout extends Layout {
     private String ndc;
     private Map mdc;
     private LocationInfo info;
+    private HashMap<String, Object> fieldData;
     private HashMap<String, Object> exceptionInformation;
-    private static Integer version = 1;
 
     private JSONObject logstashEvent;
 
@@ -44,7 +44,7 @@ public class JSONEventLayout extends Layout {
      * For backwards compatibility, the default is to generate location information
      * in the log messages.
      */
-    public JSONEventLayout() {
+    public JSONEventLayoutV0() {
         this(true);
     }
 
@@ -53,32 +53,23 @@ public class JSONEventLayout extends Layout {
      *
      * @param locationInfo whether or not to include location information in the log messages.
      */
-    public JSONEventLayout(boolean locationInfo) {
+    public JSONEventLayoutV0(boolean locationInfo) {
         this.locationInfo = locationInfo;
     }
 
     public String format(LoggingEvent loggingEvent) {
         threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
+        fieldData = new HashMap<String, Object>();
         exceptionInformation = new HashMap<String, Object>();
         mdc = loggingEvent.getProperties();
         ndc = loggingEvent.getNDC();
 
         logstashEvent = new JSONObject();
 
-        /**
-         * All v1 of the event format requires is
-         * "@timestamp" and "@version"
-         * Every other field is arbitrary
-         */
-        logstashEvent.put("@version", version);
+        logstashEvent.put("@source_host", hostname);
+        logstashEvent.put("@message", loggingEvent.getRenderedMessage());
         logstashEvent.put("@timestamp", dateFormat(timestamp));
-
-        /**
-         * Now we start injecting our own stuff.
-         */
-        logstashEvent.put("source_host", hostname);
-        logstashEvent.put("message", loggingEvent.getRenderedMessage());
 
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
@@ -92,23 +83,24 @@ public class JSONEventLayout extends Layout {
                 String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
                 exceptionInformation.put("stacktrace", stackTrace);
             }
-            addEventData("exception", exceptionInformation);
+            addFieldData("exception", exceptionInformation);
         }
 
         if (locationInfo) {
             info = loggingEvent.getLocationInformation();
-            addEventData("file", info.getFileName());
-            addEventData("line_number", info.getLineNumber());
-            addEventData("class", info.getClassName());
-            addEventData("method", info.getMethodName());
+            addFieldData("file", info.getFileName());
+            addFieldData("line_number", info.getLineNumber());
+            addFieldData("class", info.getClassName());
+            addFieldData("method", info.getMethodName());
         }
 
-        addEventData("logger_name", loggingEvent.getLoggerName());
-        addEventData("mdc", mdc);
-        addEventData("ndc", ndc);
-        addEventData("level", loggingEvent.getLevel().toString());
-        addEventData("thread_name", threadName);
+        addFieldData("loggerName", loggingEvent.getLoggerName());
+        addFieldData("mdc", mdc);
+        addFieldData("ndc", ndc);
+        addFieldData("level", loggingEvent.getLevel().toString());
+        addFieldData("threadName", threadName);
 
+        logstashEvent.put("@fields", fieldData);
         return logstashEvent.toString() + "\n";
     }
 
@@ -138,9 +130,9 @@ public class JSONEventLayout extends Layout {
         activeIgnoreThrowable = ignoreThrowable;
     }
 
-    private void addEventData(String keyname, Object keyval) {
+    private void addFieldData(String keyname, Object keyval) {
         if (null != keyval) {
-            logstashEvent.put(keyname, keyval);
+            fieldData.put(keyname, keyval);
         }
     }
 }
