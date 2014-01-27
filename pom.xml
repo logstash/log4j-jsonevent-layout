@@ -112,7 +112,7 @@
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -122,6 +122,29 @@
     </dependency>
   </dependencies>
   <profiles>
+      <profile>
+          <id>bundle</id>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.felix</groupId>
+                      <artifactId>maven-bundle-plugin</artifactId>
+                      <version>2.3.7</version>
+                      <extensions>true</extensions>
+                      <configuration>
+                          <instructions>
+                              <Bundle-Name>${project.groupId}.${project.artifactId}</Bundle-Name>
+                              <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                              <Import-Package>!*</Import-Package>
+                              <Fragment-Host>org.ops4j.pax.logging.pax-logging-service;bundle-version="[1.6,1.7)"</Fragment-Host>
+                              <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
+                              <Implementation-Version>${project.version}</Implementation-Version>
+                          </instructions>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
     <profile>
       <id>release-sign-artifacts</id>
       <activation>
