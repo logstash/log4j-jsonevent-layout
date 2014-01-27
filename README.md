@@ -35,7 +35,7 @@ log4j.appender.RollingLog.layout=net.logstash.log4j.JSONEventLayoutV1
 
 If you use this, your logfile will now have one line per event and it will look something like this:
 
-```kspm
+```json
 {
   "mdc":{},
   "line_number":"29",
@@ -98,7 +98,7 @@ If you use the XML format for your log4j configuration (and there are valid reas
 ```
 
 ## New
-```
+```xml
    <appender name="Console" class="org.apache.log4j.ConsoleAppender">
      <param name="Threshold" value="TRACE" />
      <layout class="net.logstash.log4j.JSONEventLayoutV1" />
