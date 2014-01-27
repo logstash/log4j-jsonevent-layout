@@ -30,65 +30,119 @@ log4j.appender.RollingLog=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.RollingLog.Threshold=TRACE
 log4j.appender.RollingLog.File=api.log
 log4j.appender.RollingLog.DatePattern=.yyyy-MM-dd
-log4j.appender.RollingLog.layout=net.logstash.log4j.JSONEventLayout
+log4j.appender.RollingLog.layout=net.logstash.log4j.JSONEventLayoutV1
 ```
 
 If you use this, your logfile will now have one line per event and it will look something like this:
 
-```
-{"@fields":{"timestamp":1354696445564,"level":"INFO","mdc":{},"file":"Server.java","class":"org.eclipse.jetty.server.Server","line_number":"268","method":"doStart"},"@message":"jetty-8.1.7.v20120910","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696445591,"level":"INFO","mdc":{},"file":"NCSARequestLog.java","class":"org.eclipse.jetty.server.NCSARequestLog","line_number":"649","method":"doStart"},"@message":"Opened \/services\/api\/logs\/2012_12_05.request.log","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696445598,"level":"INFO","mdc":{},"file":"ScanningAppProvider.java","class":"org.eclipse.jetty.deploy.providers.ScanningAppProvider","line_number":"113","method":"doStart"},"@message":"Deployment monitor \/services\/api\/contexts at interval 1","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696445603,"level":"INFO","mdc":{},"file":"DeploymentManager.java","class":"org.eclipse.jetty.deploy.DeploymentManager","line_number":"132","method":"addApp"},"@message":"Deployable added: \/services\/api\/contexts\/enstratus-context.xml","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696447170,"level":"INFO","mdc":{},"file":"PlusConfiguration.java","class":"org.eclipse.jetty.plus.webapp.PlusConfiguration","line_number":"95","method":"bindUserTransaction"},"@message":"No Transaction manager found - if your webapp requires one, please configure one.","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696447493,"level":"INFO","mdc":{},"file":"ContextHandler.java","class":"org.eclipse.jetty.server.handler.ContextHandler","line_number":"772","method":"callContextInitialized"},"@message":"started o.e.j.w.WebAppContext{\/,file:\/services\/api\/webapps\/ROOT\/}","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696447500,"level":"INFO","mdc":{},"file":"ContextHandler.java","class":"org.eclipse.jetty.server.handler.ContextHandler","line_number":"772","method":"callContextInitialized"},"@message":"started o.e.j.w.WebAppContext{\/,file:\/services\/api\/webapps\/ROOT\/}","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696447501,"level":"INFO","mdc":{},"file":"ContextHandler.java","class":"org.eclipse.jetty.server.handler.ContextHandler","line_number":"772","method":"callContextInitialized"},"@message":"started o.e.j.w.WebAppContext{\/,file:\/services\/api\/webapps\/ROOT\/}","@source_host":"vagrant.vm"}
-{"@fields":{"timestamp":1354696447587,"level":"INFO","mdc":{},"file":"AbstractConnector.java","class":"org.eclipse.jetty.server.AbstractConnector","line_number":"338","method":"doStart"},"@message":"Started SelectChannelConnector@0.0.0.0:15000","@source_host":"vagrant.vm"}
-```
-
-If you point logstash to this file and set the format to `json_event`, you'll basically get something like this (stdout debug json format):
-
-```
-{"@source":"file://vagrant/services/api/logs/api.log","@tags":[],"@fields":{"timestamp":1354697760477,"level":"INFO","mdc":{},"file":"DeploymentManager.java","class":"org.eclipse.jetty.deploy.DeploymentManager","line_number":"132","method":"addApp"},"@message":"Deployable added: /services/api/contexts/enstratus-context.xml","@source_host":"vagrant","@timestamp":"2012-12-05T08:56:14.031Z","@source_path":"/services/api/logs/api.log","@type":"apilog"}
-{"@source":"file://vagrant/services/api/logs/api.log","@tags":[],"@fields":{"timestamp":1354697762807,"level":"INFO","mdc":{},"file":"PlusConfiguration.java","class":"org.eclipse.jetty.plus.webapp.PlusConfiguration","line_number":"95","method":"bindUserTransaction"},"@message":"No Transaction manager found - if your webapp requires one, please configure one.","@source_host":"vagrant","@timestamp":"2012-12-05T08:56:14.039Z","@source_path":"/services/api/logs/api.log","@type":"apilog"}
-{"@source":"file://vagrant/services/api/logs/api.log","@tags":[],"@fields":{"timestamp":1354697763255,"level":"INFO","mdc":{},"file":"ContextHandler.java","class":"org.eclipse.jetty.server.handler.ContextHandler","line_number":"772","method":"callContextInitialized"},"@message":"started o.e.j.w.WebAppContext{/,file:/services/api/webapps/ROOT/}","@source_host":"vagrant","@timestamp":"2012-12-05T08:56:14.046Z","@source_path":"/services/api/logs/api.log","@type":"apilog"}
-{"@source":"file://vagrant/services/api/logs/api.log","@tags":[],"@fields":{"timestamp":1354697763261,"level":"INFO","mdc":{},"file":"ContextHandler.java","class":"org.eclipse.jetty.server.handler.ContextHandler","line_number":"772","method":"callContextInitialized"},"@message":"started o.e.j.w.WebAppContext{/,file:/services/api/webapps/ROOT/}","@source_host":"vagrant","@timestamp":"2012-12-05T08:56:14.057Z","@source_path":"/services/api/logs/api.log","@type":"apilog"}
-{"@source":"file://vagrant/services/api/logs/api.log","@tags":[],"@fields":{"timestamp":1354697763268,"level":"INFO","mdc":{},"file":"ContextHandler.java","class":"org.eclipse.jetty.server.handler.ContextHandler","line_number":"772","method":"callContextInitialized"},"@message":"started o.e.j.w.WebAppContext{/,file:/services/api/webapps/ROOT/}","@source_host":"vagrant","@timestamp":"2012-12-05T08:56:14.064Z","@source_path":"/services/api/logs/api.log","@type":"apilog"}
-{"@source":"file://vagrant/services/api/logs/api.log","@tags":[],"@fields":{"timestamp":1354697763408,"level":"INFO","mdc":{},"file":"AbstractConnector.java","class":"org.eclipse.jetty.server.AbstractConnector","line_number":"338","method":"doStart"},"@message":"Started SelectChannelConnector@0.0.0.0:15000","@source_host":"vagrant","@timestamp":"2012-12-05T08:56:14.067Z","@source_path":"/services/api/logs/api.log","@type":"apilog"}
+```kspm
+{
+  "mdc":{},
+  "line_number":"29",
+  "class":"org.eclipse.jetty.examples.logging.EchoFormServlet",
+  "@version":1,
+  "source_host":"jvstratusmbp.local",
+  "thread_name":"qtp513694835-14",
+  "message":"Got request from 0:0:0:0:0:0:0:1%0 using Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/32.0.1700.77 Safari\/537.36",
+  "@timestamp":"2014-01-27T19:52:35.738Z",
+  "level":"INFO",
+  "file":"EchoFormServlet.java",
+  "method":"doPost",
+  "logger_name":"org.eclipse.jetty.examples.logging.EchoFormServlet"
+}
 ```
 
-Nothing really groundbreaking here. However you can now use this same prefab PatternLayout with ANY appender that supports layouts. If that appender matches up with a logstash input, you've now got flexibility in your transport with reduced filtering impact (since you don't need to parse the logs as much). In fact, if you want to use RabbitMQ, you could use this layout with [@jbrisbin's amqp-appender](https://github.com/jbrisbin/vcloud/tree/master/amqp-appender).
+If you point logstash to this file and set the format to `json`, you'll basically get the same thing in your output because no filtering was needed to get this data into the right places.
 
-I'll probably be migrating my zmq-appender over to use this as well. I've already started the test cases for this but they're still short in a few places.
+Nothing really groundbreaking here. However you can now use this same prefab PatternLayout with ANY appender that supports layouts. If that appender matches up with a logstash input, you've now got flexibility in your transport with reduced filtering impact (since you don't need to parse the logs as much). In fact, if you want to use RabbitMQ, you could use this layout with [@jbrisbin's amqp-appender](https://github.com/jbrisbin/vcloud/tree/master/amqp-appender) or [Ryan Tenney's redis appender](https://github.com/ryantenney/log4j-redis-appender)
 
 # Exceptions
 
-If there is throwable information available in your event, it will be populated under the key `exception` in `@fields` like so:
+If there is throwable information available in your event, it will be populated under the key `exception` like so:
 
 ```json
 {
-    "@fields": {
-        "timestamp": 1354713757564,
-        "ndc": "json-layout-test",
-        "level": "FATAL",
-        "mdc": {},
-        "file": "JSONEventLayoutTest.java",
-        "exception": {
-            "exception_class": "java.lang.IllegalArgumentException",
-            "exception_message": "shits on fire, yo",
-            "stacktrace": "java.lang.IllegalArgumentException: shits on fire, yo\n\tat net.logstash.log4j.JSONEventLayoutTest.testJSONEventLayoutExceptions(JSONEventLayoutTest.java:102)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)\n\tat java.lang.reflect.Method.invoke(Method.java:597)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:20)\n\tat org.junit.internal.runners.statements.RunAfters.evaluate(RunAfters.java:31)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:76)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:50)\n\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)\n\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)\n\tat org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:28)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:236)\n\tat org.apache.maven.surefire.junit4.JUnit4TestSet.execute(JUnit4TestSet.java:53)\n\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:123)\n\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:104)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)\n\tat java.lang.reflect.Method.invoke(Method.java:597)\n\tat org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:164)\n\tat org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:110)\n\tat org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:175)\n\tat org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcessWhenForked(SurefireStarter.java:107)\n\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:68)"
-        },
-        "class": "net.logstash.log4j.JSONEventLayoutTest",
-        "line_number": "102",
-        "method": "testJSONEventLayoutExceptions"
-    },
-    "@message": "uh-oh",
-    "@source_host": "jvstratusmbp.local"
+  "mdc":{},
+  "exception":{
+    "exception_class":"java.lang.IllegalArgumentException",
+    "exception_message":"Something broke!",
+    "stacktrace":"java.lang.IllegalArgumentException: Something broke!\n\tat org.eclipse.jetty.examples.logging.EchoFormServlet.doPost(EchoFormServlet.java:64)\n\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:755)\n\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:848)\n\tat org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:684)\n\tat org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:501)\n\tat org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:137)\n\tat org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:533)\n\tat org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:231)\n\tat org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1086)\n\tat org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:428)\n\tat org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:193)\n\tat org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1020)\n\tat org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:135)\n\tat org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:255)\n\tat org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:154)\n\tat org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:116)\n\tat org.eclipse.jetty.server.Server.handle(Server.java:370)\n\tat org.eclipse.jetty.server.AbstractHttpConnection.handleRequest(AbstractHttpConnection.java:494)\n\tat org.eclipse.jetty.server.AbstractHttpConnection.content(AbstractHttpConnection.java:982)\n\tat org.eclipse.jetty.server.AbstractHttpConnection$RequestHandler.content(AbstractHttpConnection.java:1043)\n\tat org.eclipse.jetty.http.HttpParser.parseNext(HttpParser.java:865)\n\tat org.eclipse.jetty.http.HttpParser.parseAvailable(HttpParser.java:240)\n\tat org.eclipse.jetty.server.AsyncHttpConnection.handle(AsyncHttpConnection.java:82)\n\tat org.eclipse.jetty.io.nio.SelectChannelEndPoint.handle(SelectChannelEndPoint.java:667)\n\tat org.eclipse.jetty.io.nio.SelectChannelEndPoint$1.run(SelectChannelEndPoint.java:52)\n\tat org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:608)\n\tat org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:543)\n\tat java.lang.Thread.run(Thread.java:695)"
+  },
+  "line_number":"64",
+  "class":"org.eclipse.jetty.examples.logging.EchoFormServlet",
+  "@version":1,
+  "source_host":"jvstratusmbp.local",
+  "message":"[exception] description = \"kaboom\"",
+  "thread_name":"qtp1787577195-18",
+  "@timestamp":"2014-01-27T20:11:36.006Z",
+  "level":"FATAL",
+  "file":"EchoFormServlet.java",
+  "method":"doPost",
+  "logger_name":"org.eclipse.jetty.examples.logging.EchoFormServlet"
 }
 ```
 
 Easy access to the exception class and exception message let's you work with those....easier.
+
+# Sample XML configuration
+If you use the XML format for your log4j configuration (and there are valid reasons thanks to AsyncAppender - fml), changing your layout class for your appender would look like this
+
+## Old
+```xml
+   <appender name="Console" class="org.apache.log4j.ConsoleAppender">
+     <param name="Threshold" value="TRACE" />
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="[%d{dd MMM yyyy HH:mm:ss.SSS}] [%p.%c] %m%n" />
+     </layout>
+   </appender>
+```
+
+## New
+```
+   <appender name="Console" class="org.apache.log4j.ConsoleAppender">
+     <param name="Threshold" value="TRACE" />
+     <layout class="net.logstash.log4j.JSONEventLayoutV1" />
+   </appender>
+```
+
+Any appender that supports defining the layout can use this.
+
+# V0/V1/Vnothing
+Originally the layout class was called `JSONEventLayout`. This was originally written back when there was no versioned event format for logstash. As of Logstash 1.2 and forward, the event format is now versioned. The current version is `1` and defined the following required fields:
+
+- `@version`
+- `@timestamp` (optional - will be inferred from event receipt time
+
+Because of this, when adding support for the new format, `JSONEventLayoutV1` was used to allow backwards compatibility. As of `1.6` of the jsonevent-layout library, we've now gone to fully versioned appenders. There is no longer a `JSONEventLayout`. Instead there is:
+
+- `JSONEventLayoutV0`
+- `JSONEventLayoutV1`
+
+Work has stopped on V0 but it won't be removed. No new features are added to V0 (custom UserFields for instance).
+
+# Custom User Fields
+As of version 1.6, you can now add your own metadata to the event in the form of comma-separated key:value pairs. This can be set in either the log4jconfig OR set on the java command-line:
+
+## log4j config
+```xml
+<layout class="net.logstash.log4j.JSONEventLayoutV1" >
+  <param name="UserFields" value="foo:bar,baz:quz" />
+</layout>
+```
+
+or
+
+```
+log4j.appender.RollingLog.layout=net.logstash.log4j.JSONEventLayoutV1
+log4j.appender.RollingLog.layout.UserFields=foo:bar,baz:qux
+```
+
+## Command-line
+*Note that the command-line version will OVERRIDE any values specified in the config file should there be a key conflict!*
+
+`java -Dnet.logstash.log4j.JSONEventLayoutV1.UserFields="field3:prop3,field4:prop4" -jar .....`
+
+A warning will be logged should you attempt to set values in both places.
 
 # Pull Requests
 Pull requests are welcome for any and all things - documentation, bug fixes...whatever.
