@@ -7,11 +7,11 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.Layout;
 
-public class MockAppender extends AppenderSkeleton {
+public class MockAppenderV0 extends AppenderSkeleton {
 
     private static List messages = new ArrayList();
 
-    public MockAppender(Layout layout){
+    public MockAppenderV0(Layout layout){
         this.layout = layout;
     }
     @Override
