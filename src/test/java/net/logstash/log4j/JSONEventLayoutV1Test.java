@@ -3,6 +3,7 @@ package net.logstash.log4j;
 import junit.framework.Assert;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
@@ -23,6 +24,12 @@ import org.junit.Test;
 public class JSONEventLayoutV1Test {
     static Logger logger;
     static MockAppenderV1 appender;
+    static MockAppenderV1 userFieldsAppender;
+    static JSONEventLayoutV1 userFieldsLayout;
+    static final String userFieldsSingle = new String("field1:value1");
+    static final String userFieldsMulti = new String("field2:value2,field3:value3");
+    static final String userFieldsSingleProperty = new String("field1:propval1");
+
     static final String[] logstashFields = new String[]{
             "message",
             "source_host",
@@ -52,6 +59,78 @@ public class JSONEventLayoutV1Test {
         logger.info("this is an info message");
         String message = appender.getMessages()[0];
         Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+    }
+
+    @Test
+    public void testJSONEventLayoutHasUserFieldsFromProps() {
+        System.setProperty(JSONEventLayoutV1.ADDITIONAL_DATA_PROPERTY, userFieldsSingleProperty);
+        logger.info("this is an info message with user fields");
+        String message = appender.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue("Event does not contain field 'field1'" , jsonObject.containsKey("field1"));
+        Assert.assertEquals("Event does not contain value 'value1'", "propval1", jsonObject.get("field1"));
+        System.clearProperty(JSONEventLayoutV1.ADDITIONAL_DATA_PROPERTY);
+    }
+
+    @Test
+    public void testJSONEventLayoutHasUserFieldsFromConfig() {
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        String prevUserData = layout.getUserFields();
+        layout.setUserFields(userFieldsSingle);
+
+        logger.info("this is an info message with user fields");
+        String message = appender.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue("Event does not contain field 'field1'" , jsonObject.containsKey("field1"));
+        Assert.assertEquals("Event does not contain value 'value1'", "value1", jsonObject.get("field1"));
+
+        layout.setUserFields(prevUserData);
+    }
+
+    @Test
+    public void testJSONEventLayoutUserFieldsMulti() {
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        String prevUserData = layout.getUserFields();
+        layout.setUserFields(userFieldsMulti);
+
+        logger.info("this is an info message with user fields");
+        String message = appender.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue("Event does not contain field 'field2'" , jsonObject.containsKey("field2"));
+        Assert.assertEquals("Event does not contain value 'value2'", "value2", jsonObject.get("field2"));
+        Assert.assertTrue("Event does not contain field 'field3'" , jsonObject.containsKey("field3"));
+        Assert.assertEquals("Event does not contain value 'value3'", "value3", jsonObject.get("field3"));
+
+        layout.setUserFields(prevUserData);
+    }
+
+    @Test
+    public void testJSONEventLayoutUserFieldsPropOverride() {
+        // set the property first
+        System.setProperty(JSONEventLayoutV1.ADDITIONAL_DATA_PROPERTY, userFieldsSingleProperty);
+
+        // set the config values
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        String prevUserData = layout.getUserFields();
+        layout.setUserFields(userFieldsSingle);
+
+        logger.info("this is an info message with user fields");
+        String message = appender.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue("Event does not contain field 'field1'" , jsonObject.containsKey("field1"));
+        Assert.assertEquals("Event does not contain value 'propval1'", "propval1", jsonObject.get("field1"));
+
+        layout.setUserFields(prevUserData);
+        System.clearProperty(JSONEventLayoutV1.ADDITIONAL_DATA_PROPERTY);
+
     }
 
     @Test
