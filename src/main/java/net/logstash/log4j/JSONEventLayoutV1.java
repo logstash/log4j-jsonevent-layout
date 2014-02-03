@@ -10,6 +10,10 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
@@ -103,8 +107,11 @@ public class JSONEventLayoutV1 extends Layout {
          * Now we start injecting our own stuff.
          */
         logstashEvent.put("source_host", hostname);
+        Object messageObject = loggingEvent.getMessage();
+        if (messageObject instanceof Serializable && ! (messageObject instanceof String)) {
+            addObjectFieldData(messageObject);
+        }
         logstashEvent.put("message", loggingEvent.getRenderedMessage());
-
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
             if (throwableInformation.getThrowable().getClass().getCanonicalName() != null) {
@@ -182,6 +189,32 @@ public class JSONEventLayoutV1 extends Layout {
     private void addEventData(String keyname, Object keyval) {
         if (null != keyval) {
             logstashEvent.put(keyname, keyval);
+        }
+    }
+
+    private void addObjectFieldData(Object messageObj) {
+        Field[] fields = messageObj.getClass().getFields();
+        Object value = null;
+
+        for(Field f : fields) {
+            try {
+                value = f.get(messageObj);
+                if (value != null) addEventData(f.getName(), value);
+            } catch (IllegalAccessException e) {
+            }
+        }
+        Method[] methods = messageObj.getClass().getMethods();
+        for(Method m : methods)
+        {
+            if(m.getName().startsWith("get"))
+            {
+                try {
+                    value = m.invoke(messageObj);
+                } catch (IllegalAccessException e) {
+                } catch (InvocationTargetException e) {
+                }
+                if (value != null) addEventData(m.getName().substring(3), value);
+            }
         }
     }
 }

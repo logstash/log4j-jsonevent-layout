@@ -8,7 +8,12 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+import sun.util.logging.resources.logging;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
@@ -68,6 +73,10 @@ public class JSONEventLayoutV0 extends Layout {
 
         logstashEvent.put("@source_host", hostname);
         logstashEvent.put("@message", loggingEvent.getRenderedMessage());
+        Object messageObj = loggingEvent.getMessage();
+        if (messageObj instanceof Serializable && !(messageObj instanceof String)) {
+            addObjectFieldData(messageObj);
+        }
         logstashEvent.put("@timestamp", dateFormat(timestamp));
 
         if (loggingEvent.getThrowableInformation() != null) {
@@ -101,6 +110,32 @@ public class JSONEventLayoutV0 extends Layout {
 
         logstashEvent.put("@fields", fieldData);
         return logstashEvent.toString() + "\n";
+    }
+
+    private void addObjectFieldData(Object messageObj) {
+        Field[] fields = messageObj.getClass().getFields();
+        Object value = null;
+
+        for(Field f : fields) {
+            try {
+                value = f.get(messageObj);
+                if (value != null) fieldData.put(f.getName(), value);
+            } catch (IllegalAccessException e) {
+            }
+        }
+        Method[] methods = messageObj.getClass().getMethods();
+        for(Method m : methods)
+        {
+            if(m.getName().startsWith("get"))
+            {
+                try {
+                    value = m.invoke(messageObj);
+                } catch (IllegalAccessException e) {
+                } catch (InvocationTargetException e) {
+                }
+                if (value != null) fieldData.put(m.getName().substring(3), value);
+            }
+        }
     }
 
     public boolean ignoresThrowable() {
