@@ -20,6 +20,7 @@ import java.util.TimeZone;
 
 public class JSONEventLayoutV1 extends Layout {
 
+    private boolean renderObjectFields = false;
     private boolean locationInfo = false;
     private String customUserFields;
 
@@ -51,15 +52,19 @@ public class JSONEventLayoutV1 extends Layout {
      * in the log messages.
      */
     public JSONEventLayoutV1() {
-        this(true);
+        this(true, false);
     }
 
     /**
      * Creates a layout that optionally inserts location information into log messages.
      *
      * @param locationInfo whether or not to include location information in the log messages.
+     * @param renderObjectFields whether or not to render the fields of the message object into the json when an object is logged to log4j.
+     *                     Rendering the fields is done using reflection and incurs a performance cost
+
      */
-    public JSONEventLayoutV1(boolean locationInfo) {
+    public JSONEventLayoutV1(boolean locationInfo, boolean renderObjectFields) {
+        this.renderObjectFields = renderObjectFields;
         this.locationInfo = locationInfo;
     }
 
@@ -107,11 +112,15 @@ public class JSONEventLayoutV1 extends Layout {
          * Now we start injecting our own stuff.
          */
         logstashEvent.put("source_host", hostname);
-        Object messageObject = loggingEvent.getMessage();
-        if (messageObject instanceof Serializable && ! (messageObject instanceof String)) {
-            addObjectFieldData(messageObject);
-        }
         logstashEvent.put("message", loggingEvent.getRenderedMessage());
+
+        if (renderObjectFields) {
+            Object messageObject = loggingEvent.getMessage();
+            if (messageObject instanceof Serializable && ! (messageObject instanceof String)) {
+                addObjectFieldData(messageObject);
+            }
+        }
+
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
             if (throwableInformation.getThrowable().getClass().getCanonicalName() != null) {
@@ -164,6 +173,15 @@ public class JSONEventLayoutV1 extends Layout {
      */
     public void setLocationInfo(boolean locationInfo) {
         this.locationInfo = locationInfo;
+    }
+
+    /**
+     * Set whether or not to render the fields of the message object into the json when an object is logged to log4j.
+     * Rendering the fields is done using reflection and incurs a performance cost
+      * @param renderObjectFields
+     */
+    public void setRenderObjectFields(boolean renderObjectFields) {
+        this.renderObjectFields = renderObjectFields;
     }
 
     public String getUserFields() { return customUserFields; }
