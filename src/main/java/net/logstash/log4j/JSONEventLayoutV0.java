@@ -119,8 +119,8 @@ public class JSONEventLayoutV0 extends Layout {
     }
 
     private void addObjectFieldData(Object messageObj) {
-        Field[] fields = messageObj.getClass().getFields();
-        Object value = null;
+        Field[] fields = messageObj.getClass().getDeclaredFields();
+        Object value;
 
         for(Field f : fields) {
             try {
@@ -129,17 +129,17 @@ public class JSONEventLayoutV0 extends Layout {
             } catch (IllegalAccessException e) {
             }
         }
-        Method[] methods = messageObj.getClass().getMethods();
+        Method[] methods = messageObj.getClass().getDeclaredMethods();
         for(Method m : methods)
         {
             if(m.getName().startsWith("get"))
             {
                 try {
                     value = m.invoke(messageObj);
+                    if (value != null) fieldData.put(m.getName().substring(3), value);
                 } catch (IllegalAccessException e) {
                 } catch (InvocationTargetException e) {
                 }
-                if (value != null) fieldData.put(m.getName().substring(3), value);
             }
         }
     }
@@ -174,7 +174,11 @@ public class JSONEventLayoutV0 extends Layout {
     public void setRenderObjectFields(boolean renderObjectFields) {
         this.renderObjectFields = renderObjectFields;
     }
-    
+
+    public boolean getRenderObjectFields() {
+        return renderObjectFields;
+    }
+
     public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;
     }

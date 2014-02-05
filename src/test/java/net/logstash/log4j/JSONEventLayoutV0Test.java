@@ -12,6 +12,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.Serializable;
+
 /**
  * Created with IntelliJ IDEA.
  * User: jvincent
@@ -156,6 +158,25 @@ public class JSONEventLayoutV0Test {
         JSONObject jsonObject = (JSONObject) obj;
         JSONObject atFields = (JSONObject) jsonObject.get("@fields");
         Assert.assertNotNull("ThreadName value is missing", atFields.get("threadName"));
+    }
+
+    @Test
+    public void testMessageObjectRendering() {
+        JSONEventLayoutV0 layout = (JSONEventLayoutV0) appender.getLayout();
+        boolean prevRenderObjectFields = layout.getRenderObjectFields();
+        layout.setRenderObjectFields(true);
+        logger.info(new Serializable() {
+            String test = "TEST";
+            int testNum = 1123;
+        });
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+        Assert.assertTrue(atFields.containsKey("testNum"));
+        Assert.assertTrue(atFields.get("testNum") instanceof Integer);
+        Assert.assertEquals(atFields.get("testNum"), 1123);
+        layout.setRenderObjectFields(prevRenderObjectFields);
     }
 
     @Test

@@ -184,6 +184,10 @@ public class JSONEventLayoutV1 extends Layout {
         this.renderObjectFields = renderObjectFields;
     }
 
+    public boolean getRenderObjectFields() {
+        return renderObjectFields;
+    }
+
     public String getUserFields() { return customUserFields; }
     public void setUserFields(String userFields) { this.customUserFields = userFields; }
 
@@ -211,27 +215,24 @@ public class JSONEventLayoutV1 extends Layout {
     }
 
     private void addObjectFieldData(Object messageObj) {
-        Field[] fields = messageObj.getClass().getFields();
-        Object value = null;
+        Field[] fields = messageObj.getClass().getDeclaredFields();
 
         for(Field f : fields) {
             try {
-                value = f.get(messageObj);
-                if (value != null) addEventData(f.getName(), value);
+                addEventData(f.getName(), f.get(messageObj));
             } catch (IllegalAccessException e) {
             }
         }
-        Method[] methods = messageObj.getClass().getMethods();
+        Method[] methods = messageObj.getClass().getDeclaredMethods();
         for(Method m : methods)
         {
             if(m.getName().startsWith("get"))
             {
                 try {
-                    value = m.invoke(messageObj);
+                    addEventData(m.getName().substring(3), m.invoke(messageObj));
                 } catch (IllegalAccessException e) {
                 } catch (InvocationTargetException e) {
                 }
-                if (value != null) addEventData(m.getName().substring(3), value);
             }
         }
     }
