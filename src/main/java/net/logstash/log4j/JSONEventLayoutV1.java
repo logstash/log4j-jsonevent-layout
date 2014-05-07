@@ -77,6 +77,15 @@ public class JSONEventLayoutV1 extends Layout {
         logstashEvent.put("@version", version);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
 
+        // allow sub-classes to add extra-data to log
+        Map extraFields = getExtraFields();
+        if (extraFields != null) {
+            for (Object entryObj : extraFields.entrySet()) {
+                Map.Entry entry = (Map.Entry) entryObj;
+                addEventData(entry.getKey().toString(), entry.getValue() != null ? entry.getValue().toString() : "null");
+            }
+        }
+
         /**
          * Extract and add fields from log4j config, if defined
          */
@@ -164,6 +173,11 @@ public class JSONEventLayoutV1 extends Layout {
 
     public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;
+    }
+
+    /** Extension point allowing subclasses to add more data to the json log */
+    protected Map getExtraFields() {
+        return null;
     }
 
     private void addUserFields(String data) {

@@ -1,26 +1,21 @@
 package net.logstash.log4j;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Assert;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import org.apache.log4j.Layout;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * Created with IntelliJ IDEA.
- * User: jvincent
- * Date: 12/5/12
- * Time: 12:07 AM
- * To change this template use File | Settings | File Templates.
- */
 public class JSONEventLayoutV1Test {
     static Logger logger;
     static MockAppenderV1 appender;
@@ -37,13 +32,14 @@ public class JSONEventLayoutV1Test {
             "@version"
     };
 
-    @BeforeClass
-    public static void setupTestAppender() {
+    @Before
+    public void init() {
         appender = new MockAppenderV1(new JSONEventLayoutV1());
-        logger = Logger.getRootLogger();
         appender.setThreshold(Level.TRACE);
         appender.setName("mockappenderv1");
         appender.activateOptions();
+        logger = Logger.getRootLogger();
+        logger.removeAllAppenders();
         logger.addAppender(appender);
     }
 
@@ -131,6 +127,25 @@ public class JSONEventLayoutV1Test {
         layout.setUserFields(prevUserData);
         System.clearProperty(JSONEventLayoutV1.ADDITIONAL_DATA_PROPERTY);
 
+    }
+
+    @Test
+    public void testJSONEventLayoutExtraFields() {
+        MockAppenderV1 mockAppenderWithExtra = new MockAppenderV1(new JSONEventLayoutV1WithExtraField());
+        Logger loggerWithExtra = Logger.getRootLogger();
+        mockAppenderWithExtra.setThreshold(Level.TRACE);
+        mockAppenderWithExtra.setName("mockappenderv1-with-extra");
+        mockAppenderWithExtra.activateOptions();
+        loggerWithExtra.removeAllAppenders();
+        loggerWithExtra.addAppender(mockAppenderWithExtra);
+
+        loggerWithExtra.info("this is an info message with user fields");
+        String message = mockAppenderWithExtra.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue("Event does not contain field 'extra-field'" , jsonObject.containsKey("extra-field"));
+        Assert.assertEquals("Event does not contain value 'extra-value'", "extra-value", jsonObject.get("extra-field"));
     }
 
     @Test
@@ -262,5 +277,15 @@ public class JSONEventLayoutV1Test {
     public void testDateFormat() {
         long timestamp = 1364844991207L;
         Assert.assertEquals("format does not produce expected output", "2013-04-01T19:36:31.207Z", JSONEventLayoutV1.dateFormat(timestamp));
+    }
+
+    private static class JSONEventLayoutV1WithExtraField extends JSONEventLayoutV1 {
+
+        @Override
+        protected Map getExtraFields() {
+            Map extra = new HashMap(1);
+            extra.put("extra-field", "extra-value");
+            return extra;
+        }
     }
 }
