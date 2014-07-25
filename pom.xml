@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>net.logstash.log4j</groupId>
+  <groupId>com.indeed.logstash.log4j</groupId>
   <artifactId>jsonevent-layout</artifactId>
   <packaging>jar</packaging>
-  <version>1.7-SNAPSHOT</version>
+  <version>1.6.1-SNAPSHOT</version>
   <name>jsonevent-layout</name>
   <description>Log4j pattern layout that conforms to the logstash json_event format</description>
   <url>http://logstash.net</url>
@@ -31,14 +31,14 @@
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
   <parent>
-    <groupId>org.sonatype.oss</groupId>
+    <groupId>com.indeed</groupId>
     <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <version>5</version>
   </parent>
   <scm>
-    <connection>scm:git:git@github.com:git@github.com:logstash/log4j-jsonevent-layout.git</connection>
-    <developerConnection>scm:git:git@github.com:logstash/log4j-jsonevent-layout.git</developerConnection>
-    <url>git@github.com:logstash/log4j-jsonevent-layout.git</url>
+    <connection>scm:git:https://github.com/indeedeng/log4j-jsonevent-layout.git</connection>
+    <developerConnection>scm:git:git@github.com:indeedeng/log4j-jsonevent-layout.git</developerConnection>
+    <url>git@github.com:indeedeng/log4j-jsonevent-layout.git</url>
   </scm>
   <build>
     <pluginManagement>
@@ -99,9 +99,15 @@
   </build>
   <dependencies>
     <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.1.2</version>
+    </dependency>
+    <dependency>
       <groupId>net.minidev</groupId>
       <artifactId>json-smart</artifactId>
       <version>1.1.1</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
