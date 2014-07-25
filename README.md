@@ -1,4 +1,4 @@
-# Logstash `json_event` pattern for log4j
+# Logstash `json_event` pattern for log4j [indeed fork]
 
 [![Build Status](https://travis-ci.org/lusis/log4j-jsonevent-layout.png)](https://travis-ci.org/lusis/log4j-jsonevent-layout)
 
