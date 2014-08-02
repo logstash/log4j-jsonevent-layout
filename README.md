@@ -19,7 +19,7 @@ The `log4j` input is actually pretty cool but needs to be refactored a little bi
 
 Then I remembered the "hack" that would let you dump your [apache](http://cookbook.logstash.net/recipes/apache-json-logs/) or [nginx](http://blog.pkhamre.com/2012/08/23/logging-to-logstash-json-format-in-nginx/) logs in json_event format.
 
-I probably could have pulled this off using a complicated PatternLayout but decided I wanted a turnkey "soluton" that did the work for you. That's what this library is.
+I probably could have pulled this off using a complicated PatternLayout but decided I wanted a turnkey "solution" that did the work for you. That's what this library is.
 
 # Usage
 This is just a quick snippit of a `log4j.properties` file:
