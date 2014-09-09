@@ -3,16 +3,16 @@ package net.logstash.log4j;
 import junit.framework.Assert;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.log4j.*;
+import org.apache.log4j.or.ObjectRenderer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -154,6 +154,34 @@ public class JSONEventLayoutV1Test {
         JSONObject jsonObject = (JSONObject) obj;
 
         Assert.assertEquals("NDC is wrong", ndcData, jsonObject.get("ndc"));
+    }
+
+    @Test
+    public void testJSONEventLayoutHasMDC() {
+        MDC.put("foo", "bar");
+        logger.warn("I should have MDC data in my log");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject mdc = (JSONObject) jsonObject.get("mdc");
+
+        Assert.assertEquals("MDC is wrong","bar", mdc.get("foo"));
+    }
+
+    @Test
+    public void testJSONEventLayoutHasNestedMDC() {
+        HashMap nestedMdc = new HashMap<String, String>();
+        nestedMdc.put("bar","baz");
+        MDC.put("foo",nestedMdc);
+        logger.warn("I should have nested MDC data in my log");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject mdc = (JSONObject) jsonObject.get("mdc");
+        JSONObject nested = (JSONObject) mdc.get("foo");
+
+        Assert.assertTrue("Event is missing foo key", mdc.containsKey("foo"));
+        Assert.assertEquals("Nested MDC data is wrong", "baz", nested.get("bar"));
     }
 
     @Test
