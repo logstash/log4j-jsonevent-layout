@@ -10,12 +10,17 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
 public class JSONEventLayoutV1 extends Layout {
 
+    private boolean renderObjectFields = false;
     private boolean locationInfo = false;
     private String customUserFields;
 
@@ -47,15 +52,19 @@ public class JSONEventLayoutV1 extends Layout {
      * in the log messages.
      */
     public JSONEventLayoutV1() {
-        this(true);
+        this(true, false);
     }
 
     /**
      * Creates a layout that optionally inserts location information into log messages.
      *
      * @param locationInfo whether or not to include location information in the log messages.
+     * @param renderObjectFields whether or not to render the fields of the message object into the json when an object is logged to log4j.
+     *                     Rendering the fields is done using reflection and incurs a performance cost
+
      */
-    public JSONEventLayoutV1(boolean locationInfo) {
+    public JSONEventLayoutV1(boolean locationInfo, boolean renderObjectFields) {
+        this.renderObjectFields = renderObjectFields;
         this.locationInfo = locationInfo;
     }
 
@@ -104,6 +113,13 @@ public class JSONEventLayoutV1 extends Layout {
          */
         logstashEvent.put("source_host", hostname);
         logstashEvent.put("message", loggingEvent.getRenderedMessage());
+
+        if (renderObjectFields) {
+            Object messageObject = loggingEvent.getMessage();
+            if (messageObject instanceof Serializable && ! (messageObject instanceof String)) {
+                addObjectFieldData(messageObject);
+            }
+        }
 
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
@@ -159,6 +175,19 @@ public class JSONEventLayoutV1 extends Layout {
         this.locationInfo = locationInfo;
     }
 
+    /**
+     * Set whether or not to render the fields of the message object into the json when an object is logged to log4j.
+     * Rendering the fields is done using reflection and incurs a performance cost
+      * @param renderObjectFields
+     */
+    public void setRenderObjectFields(boolean renderObjectFields) {
+        this.renderObjectFields = renderObjectFields;
+    }
+
+    public boolean getRenderObjectFields() {
+        return renderObjectFields;
+    }
+
     public String getUserFields() { return customUserFields; }
     public void setUserFields(String userFields) { this.customUserFields = userFields; }
 
@@ -182,6 +211,29 @@ public class JSONEventLayoutV1 extends Layout {
     private void addEventData(String keyname, Object keyval) {
         if (null != keyval) {
             logstashEvent.put(keyname, keyval);
+        }
+    }
+
+    private void addObjectFieldData(Object messageObj) {
+        Field[] fields = messageObj.getClass().getDeclaredFields();
+
+        for(Field f : fields) {
+            try {
+                addEventData(f.getName(), f.get(messageObj));
+            } catch (IllegalAccessException e) {
+            }
+        }
+        Method[] methods = messageObj.getClass().getDeclaredMethods();
+        for(Method m : methods)
+        {
+            if(m.getName().startsWith("get"))
+            {
+                try {
+                    addEventData(m.getName().substring(3), m.invoke(messageObj));
+                } catch (IllegalAccessException e) {
+                } catch (InvocationTargetException e) {
+                }
+            }
         }
     }
 }
