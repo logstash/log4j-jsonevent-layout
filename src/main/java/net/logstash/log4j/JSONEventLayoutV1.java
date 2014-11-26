@@ -107,11 +107,13 @@ public class JSONEventLayoutV1 extends Layout {
 
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
-            if (throwableInformation.getThrowable().getClass().getCanonicalName() != null) {
-                exceptionInformation.put("exception_class", throwableInformation.getThrowable().getClass().getCanonicalName());
-            }
-            if (throwableInformation.getThrowable().getMessage() != null) {
-                exceptionInformation.put("exception_message", throwableInformation.getThrowable().getMessage());
+            if (throwableInformation.getThrowable() != null) {
+                if (throwableInformation.getThrowable().getClass().getCanonicalName() != null) {
+                    exceptionInformation.put("exception_class", throwableInformation.getThrowable().getClass().getCanonicalName());
+                }
+                if (throwableInformation.getThrowable().getMessage() != null) {
+                    exceptionInformation.put("exception_message", throwableInformation.getThrowable().getMessage());
+                }
             }
             if (throwableInformation.getThrowableStrRep() != null) {
                 String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
