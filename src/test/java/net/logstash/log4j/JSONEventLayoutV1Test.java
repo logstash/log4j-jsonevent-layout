@@ -3,8 +3,10 @@ package net.logstash.log4j;
 import junit.framework.Assert;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+
 import org.apache.log4j.*;
 import org.apache.log4j.or.ObjectRenderer;
+import org.apache.log4j.spi.LoggingEvent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.AfterClass;
@@ -12,6 +14,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 /**
@@ -290,5 +296,56 @@ public class JSONEventLayoutV1Test {
     public void testDateFormat() {
         long timestamp = 1364844991207L;
         Assert.assertEquals("format does not produce expected output", "2013-04-01T19:36:31.207Z", JSONEventLayoutV1.dateFormat(timestamp));
+    }
+
+    @Test
+    public void testJSONEventLayoutAfterSerialization() {
+        logger.removeAppender(appender);
+
+        MockAppenderV1 serializingAppender = new MockAppenderV1(new JSONEventLayoutV1()) {
+            @Override
+            protected void append(LoggingEvent event) {
+                LoggingEvent eventAfterSerialization = null;
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ObjectOutputStream oos = new ObjectOutputStream(baos);
+                    oos.writeObject(event);
+                    oos.flush();
+
+                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    eventAfterSerialization = (LoggingEvent) ois.readObject();
+
+                    Assert.assertNotNull("The throwable information should still exist after serialization", eventAfterSerialization.getThrowableInformation());
+                    Assert.assertNull("The transient throwable should no longer exist after serialization", eventAfterSerialization.getThrowableInformation().getThrowable());
+
+                } catch (Exception ex) {
+                    Assert.fail("Unexpected error while serializing the logging event: " + ex.getMessage());
+                }
+                super.append(eventAfterSerialization);
+            }
+        };
+
+        logger.addAppender(serializingAppender);
+
+        try {
+            logger.error("The throwable for this event will be removed because of serialization", new RuntimeException("For stacktrace purpose"));
+        } catch (Exception ex) {
+            Assert.fail("Error while processing logging event after serialization: " + ex.getMessage());
+        } finally {
+            logger.removeAppender(serializingAppender);
+            logger.addAppender(appender);
+        }
+
+        String message = appender.getMessages()[0];
+
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject exceptionInformation = (JSONObject) jsonObject.get("exception");
+
+        Assert.assertNull("The exception class should not have been read from a serialized logging event", exceptionInformation.get("exception_class"));
+        Assert.assertNull("The exception message should not have been read from a serialized logging event", exceptionInformation.get("exception_message"));
+        Assert.assertNotNull("Stacktrace should still be available after serialization", exceptionInformation.get("stacktrace"));
+        Assert.assertTrue(exceptionInformation.get("stacktrace").toString().startsWith("java.lang.RuntimeException: For stacktrace purpose"));
     }
 }
