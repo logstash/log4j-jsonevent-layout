@@ -60,6 +60,12 @@ public class JSONEventLayoutV1 extends Layout {
     }
 
     public String format(LoggingEvent loggingEvent) {
+        JSONObject lsEvent = createLogstashEvent(loggingEvent);
+
+        return lsEvent.toString() + "\n";
+    }
+
+    protected JSONObject createLogstashEvent(LoggingEvent loggingEvent) {
         threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
         exceptionInformation = new HashMap<String, Object>();
@@ -82,7 +88,7 @@ public class JSONEventLayoutV1 extends Layout {
          */
         if (getUserFields() != null) {
             String userFlds = getUserFields();
-            LogLog.debug("["+whoami+"] Got user data from log4j property: "+ userFlds);
+            LogLog.debug("[" + whoami + "] Got user data from log4j property: " + userFlds);
             addUserFields(userFlds);
         }
 
@@ -134,7 +140,7 @@ public class JSONEventLayoutV1 extends Layout {
         addEventData("level", loggingEvent.getLevel().toString());
         addEventData("thread_name", threadName);
 
-        return logstashEvent.toString() + "\n";
+        return logstashEvent;
     }
 
     public boolean ignoresThrowable() {
