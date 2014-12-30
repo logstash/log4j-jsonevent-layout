@@ -144,5 +144,14 @@ log4j.appender.RollingLog.layout.UserFields=foo:bar,baz:qux
 
 A warning will be logged should you attempt to set values in both places.
 
+# Maven
+```xml
+    <dependency>
+        <groupId>net.logstash.log4j</groupId>
+        <artifactId>jsonevent-layout</artifactId>
+        <version>1.7</version>
+    </dependency>
+```
+
 # Pull Requests
 Pull requests are welcome for any and all things - documentation, bug fixes...whatever.
