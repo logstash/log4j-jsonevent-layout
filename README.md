@@ -113,12 +113,12 @@ Originally the layout class was called `JSONEventLayout`. This was originally wr
 - `@version`
 - `@timestamp` (optional - will be inferred from event receipt time
 
-Because of this, when adding support for the new format, `JSONEventLayoutV1` was used to allow backwards compatibility. As of `1.6` of the jsonevent-layout library, we've now gone to fully versioned appenders. There is no longer a `JSONEventLayout`. Instead there is:
+Because of this, when adding support for the new format, `JSONEventLayoutV1` was used to allow backwards compatibility. As of `1.6` of the jsonevent-layout library, we've now gone to fully versioned appenders. Always use either:
 
 - `JSONEventLayoutV0`
 - `JSONEventLayoutV1`
 
-Work has stopped on V0 but it won't be removed. No new features are added to V0 (custom UserFields for instance).
+Work has stopped on V0 but it won't be removed. No new features are added to V0 (custom UserFields for instance). For convenience, `JSONEventLayout` is an alias to `JSONEventLayoutV0` but its use is discouraged.
 
 # Custom User Fields
 As of version 1.6, you can now add your own metadata to the event in the form of comma-separated key:value pairs. This can be set in either the log4jconfig OR set on the java command-line:

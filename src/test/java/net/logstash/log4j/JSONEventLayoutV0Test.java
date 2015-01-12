@@ -34,7 +34,7 @@ public class JSONEventLayoutV0Test {
         appender = new MockAppenderV0(new JSONEventLayoutV0());
         logger = Logger.getRootLogger();
         appender.setThreshold(Level.TRACE);
-        appender.setName("mockappender");
+        appender.setName("mockappenderv0");
         appender.activateOptions();
         logger.addAppender(appender);
     }
