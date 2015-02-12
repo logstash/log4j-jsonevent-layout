@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class JSONEventLayoutV1 extends Layout {
+public class JSONEventLayoutV1 extends Layout implements IJSONEventLayout {
 
     private boolean locationInfo = false;
     private String customUserFields;
@@ -60,6 +60,12 @@ public class JSONEventLayoutV1 extends Layout {
     }
 
     public String format(LoggingEvent loggingEvent) {
+        JSONObject lsEvent = createLogstashEvent(loggingEvent);
+
+        return lsEvent.toString() + "\n";
+    }
+
+    protected JSONObject createLogstashEvent(LoggingEvent loggingEvent) {
         threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
         exceptionInformation = new HashMap<String, Object>();
@@ -82,7 +88,7 @@ public class JSONEventLayoutV1 extends Layout {
          */
         if (getUserFields() != null) {
             String userFlds = getUserFields();
-            LogLog.debug("["+whoami+"] Got user data from log4j property: "+ userFlds);
+            LogLog.debug("[" + whoami + "] Got user data from log4j property: " + userFlds);
             addUserFields(userFlds);
         }
 
@@ -134,7 +140,7 @@ public class JSONEventLayoutV1 extends Layout {
         addEventData("level", loggingEvent.getLevel().toString());
         addEventData("thread_name", threadName);
 
-        return logstashEvent.toString() + "\n";
+        return logstashEvent;
     }
 
     public boolean ignoresThrowable() {
@@ -146,6 +152,7 @@ public class JSONEventLayoutV1 extends Layout {
      *
      * @return true if location information is included in log messages, false otherwise.
      */
+    @Override
     public boolean getLocationInfo() {
         return locationInfo;
     }
@@ -155,11 +162,15 @@ public class JSONEventLayoutV1 extends Layout {
      *
      * @param locationInfo true if location information should be included, false otherwise.
      */
+    @Override
     public void setLocationInfo(boolean locationInfo) {
         this.locationInfo = locationInfo;
     }
 
+    @Override
     public String getUserFields() { return customUserFields; }
+
+    @Override
     public void setUserFields(String userFields) { this.customUserFields = userFields; }
 
     public void activateOptions() {
@@ -179,6 +190,7 @@ public class JSONEventLayoutV1 extends Layout {
             }
         }
     }
+
     private void addEventData(String keyname, Object keyval) {
         if (null != keyval) {
             logstashEvent.put(keyname, keyval);
