@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class JSONEventLayoutV1 extends Layout {
+public class JSONEventLayoutV1 extends Layout implements IJSONEventLayout {
 
     private boolean locationInfo = false;
     private String customUserFields;
@@ -152,6 +152,7 @@ public class JSONEventLayoutV1 extends Layout {
      *
      * @return true if location information is included in log messages, false otherwise.
      */
+    @Override
     public boolean getLocationInfo() {
         return locationInfo;
     }
@@ -161,11 +162,15 @@ public class JSONEventLayoutV1 extends Layout {
      *
      * @param locationInfo true if location information should be included, false otherwise.
      */
+    @Override
     public void setLocationInfo(boolean locationInfo) {
         this.locationInfo = locationInfo;
     }
 
+    @Override
     public String getUserFields() { return customUserFields; }
+
+    @Override
     public void setUserFields(String userFields) { this.customUserFields = userFields; }
 
     public void activateOptions() {
@@ -185,6 +190,7 @@ public class JSONEventLayoutV1 extends Layout {
             }
         }
     }
+
     private void addEventData(String keyname, Object keyval) {
         if (null != keyval) {
             logstashEvent.put(keyname, keyval);

@@ -9,7 +9,7 @@ import org.apache.log4j.Layout;
 
 public class MockAppenderV1 extends AppenderSkeleton {
 
-    private static List messages = new ArrayList();
+    private List messages = new ArrayList();
 
     public MockAppenderV1(Layout layout){
         this.layout = layout;
@@ -27,7 +27,7 @@ public class MockAppenderV1 extends AppenderSkeleton {
         return true;
     }
 
-    public static String[] getMessages() {
+    public String[] getMessages() {
         return (String[]) messages.toArray(new String[messages.size()]);
     }
 

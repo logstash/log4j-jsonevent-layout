@@ -13,6 +13,9 @@
  */
 package net.logstash.log4j.fieldnames;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Names of standard fields that appear in the JSON output.
  *
@@ -24,7 +27,7 @@ public class LogstashFieldNames extends LogstashCommonFieldNames {
     private String logger = "loggername";
     private String thread = "threadname";
     private String level = "level";
-    private String levelValue = "levelvalue";
+    //private String levelValue = "levelvalue";
 
     private String callerClass = "classname";
     private String callerMethod = "methodname";
@@ -92,6 +95,7 @@ public class LogstashFieldNames extends LogstashCommonFieldNames {
         this.level = level;
     }
 
+   /**
     public String getLevelValue() {
         return levelValue;
     }
@@ -99,7 +103,7 @@ public class LogstashFieldNames extends LogstashCommonFieldNames {
     public void setLevelValue(String levelValue) {
         this.levelValue = levelValue;
     }
-
+    **/
     /**
      * The name of the caller object field.
      * <p/>
@@ -239,5 +243,24 @@ public class LogstashFieldNames extends LogstashCommonFieldNames {
 
     public void setNdc(String ndc) {
         this.ndc = ndc;
+    }
+
+
+    public List<String> listNames() {
+        List<String> namesList = new ArrayList<>();
+
+        namesList.addAll(super.listCommonNames());
+        namesList.add(getLogger());
+        namesList.add(getThread());
+        namesList.add(getLevel());
+        namesList.add(getCallerClass());
+        namesList.add(getCallerMethod());
+        namesList.add(getCallerFile());
+        namesList.add(getCallerLine());
+        namesList.add(getStackTrace());
+        namesList.add(getTags());
+        namesList.add(getNdc());
+
+        return  namesList;
     }
 }

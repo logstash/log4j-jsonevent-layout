@@ -13,6 +13,9 @@
  */
 package net.logstash.log4j.fieldnames;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Common field names
  */
@@ -43,5 +46,15 @@ public abstract class LogstashCommonFieldNames {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public List<String> listCommonNames() {
+        List<String> namesList = new ArrayList<>();
+
+        namesList.add(getTimestamp());
+        namesList.add(getMessage());
+        namesList.add(getVersion());
+
+        return  namesList;
     }
 }

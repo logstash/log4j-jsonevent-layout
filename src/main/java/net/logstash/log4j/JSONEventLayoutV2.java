@@ -19,13 +19,13 @@ import java.util.TimeZone;
 
 /**
  * Log4j JSON Layout providing mutable output field names
- *
+ * <p/>
  * Based upon the similar field name solution for logback found here
  * https://github.com/logstash/logstash-logback-encoder
- *
+ * <p/>
  * Also allows for "flattening" of the output structure, removing any nested structures
  */
-public class JSONEventLayoutV2 extends Layout {
+public class JSONEventLayoutV2 extends Layout implements IJSONEventLayout {
 
     protected ErrorHandler errorHandler = new OnlyOnceErrorHandler();
 
@@ -42,6 +42,10 @@ public class JSONEventLayoutV2 extends Layout {
 
     public static String dateFormat(long timestamp) {
         return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(timestamp);
+    }
+
+    public JSONEventLayoutV2() {
+        this(true);
     }
 
     public JSONEventLayoutV2(boolean isLocationInfo) {
@@ -225,6 +229,7 @@ public class JSONEventLayoutV2 extends Layout {
         fieldNames.setFlattenOutput(isFlatten);
     }
 
+    @Override
     public boolean ignoresThrowable() {
         return ignoreThrowable;
     }
@@ -234,6 +239,7 @@ public class JSONEventLayoutV2 extends Layout {
      *
      * @return true if location information is included in log messages, false otherwise.
      */
+    @Override
     public boolean getLocationInfo() {
         return locationInfo;
     }
@@ -243,14 +249,17 @@ public class JSONEventLayoutV2 extends Layout {
      *
      * @param locationInfo true if location information should be included, false otherwise.
      */
+    @Override
     public void setLocationInfo(boolean locationInfo) {
         this.locationInfo = locationInfo;
     }
 
+    @Override
     public String getUserFields() {
         return customUserFields;
     }
 
+    @Override
     public void setUserFields(String userFields) {
         this.customUserFields = userFields;
     }
