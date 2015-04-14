@@ -132,8 +132,7 @@
                         <Bundle-Name>${project.groupId}.${project.artifactId}</Bundle-Name>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>!*</Import-Package>
-                        <Fragment-Host>org.ops4j.pax.logging.pax-logging-service;bundle-version="[1.6,1.7)"
-                        </Fragment-Host>
+                        <Fragment-Host>org.ops4j.pax.logging.pax-logging-service;bundle-version="[1.6,1.8)"</Fragment-Host>
                         <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
                         <Implementation-Version>${project.version}</Implementation-Version>
                     </instructions>
