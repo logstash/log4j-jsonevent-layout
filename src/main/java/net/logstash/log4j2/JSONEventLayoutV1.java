@@ -77,7 +77,6 @@ public class JSONEventLayoutV1 extends AbstractStringLayout {
 			appendUserFields(userFields, systemPropertyUserFields);
 		}
 
-		userFields.put("@version", LOGSTASH_JSON_EVENT_VERSION);
 		return userFields;
 	}
 
@@ -97,11 +96,11 @@ public class JSONEventLayoutV1 extends AbstractStringLayout {
 
 		/*
 		 * NOTE: v1 of the event format only requires "@timestamp" and "@version", every other field is arbitrary
-		 * NOTE: "@version" is one of the userFields
 		 */
 
 		JSONObject logstashEvent = new JSONObject(this.userFields);
 		logstashEvent.put("@timestamp", dateFormat(event.getTimeMillis()));
+        logstashEvent.put("@version", LOGSTASH_JSON_EVENT_VERSION);
 
 		// now we start injecting our own stuff
 		logstashEvent.put("source_host", this.hostname);
