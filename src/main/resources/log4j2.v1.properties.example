@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
-<Configuration>
+<Configuration packages="net.logstash.log4j2">
 	<Appenders>
 		<Console name="ConsoleAppender" target="SYSTEM_OUT">
-			<LogstashJsonEventLayoutV1/>
+			<JSONEventLayoutV1/>
 		</Console>
 	</Appenders>
 	<Loggers>
