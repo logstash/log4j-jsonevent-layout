@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<Configuration>
+	<Appenders>
+		<Console name="ConsoleAppender" target="SYSTEM_OUT">
+			<LogstashJsonEventLayoutV1/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="trace">
+			<AppenderRef ref="ConsoleAppender"/>
+		</Root>
+	</Loggers>
+</Configuration>

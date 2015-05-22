@@ -1,4 +1,4 @@
-package net.logstash.log4j.data;
+package net.logstash.data;
 
 import java.net.UnknownHostException;
 

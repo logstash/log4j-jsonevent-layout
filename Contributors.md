@@ -6,3 +6,4 @@
 - @astrochoupe
 - @bfritz (Brad Fritz)
 - @vrivellino (Vincent R.)
+- @michaelkuechler
