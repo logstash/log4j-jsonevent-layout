@@ -42,7 +42,7 @@ public class JSONEventLayoutV1 extends AbstractStringLayout {
 	}
 
 	private static final int LOGSTASH_JSON_EVENT_VERSION = 1;
-	private static final String USER_FIELDS_PROPERTY = "org.apache.logging.log4j.core.layout.LogstashJsonEventLayoutV1.UserFields";
+	private static final String USER_FIELDS_PROPERTY = "net.logstash.log4j2.JSONEventLayoutV1.UserFields";
 	private static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone("UTC"));
 
 	public static String dateFormat(long timestamp) {
@@ -100,14 +100,14 @@ public class JSONEventLayoutV1 extends AbstractStringLayout {
 
 		JSONObject logstashEvent = new JSONObject(this.userFields);
 		logstashEvent.put("@timestamp", dateFormat(event.getTimeMillis()));
-        logstashEvent.put("@version", LOGSTASH_JSON_EVENT_VERSION);
+		logstashEvent.put("@version", LOGSTASH_JSON_EVENT_VERSION);
 
 		// now we start injecting our own stuff
 		logstashEvent.put("source_host", this.hostname);
 		logstashEvent.put("message", event.getMessage().getFormattedMessage());
 
 		if (event.getThrownProxy() != null) {
-			HashMap<String, Object> exceptionInformation = new HashMap<String, Object>();
+			Map<String, Object> exceptionInformation = new HashMap<String, Object>();
 			ThrowableProxy thrownProxy = event.getThrownProxy();
 			if (thrownProxy.getThrowable().getClass().getCanonicalName() != null) {
 				exceptionInformation.put("exception_class", thrownProxy.getThrowable().getClass().getCanonicalName());
