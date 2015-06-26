@@ -125,7 +125,7 @@ public class JSONEventLayoutV1Test {
         Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
         Object obj = JSONValue.parse(message);
         JSONObject jsonObject = (JSONObject) obj;
-        Assert.assertTrue("Event does not contain field 'field1'" , jsonObject.containsKey("field1"));
+        Assert.assertTrue("Event does not contain field 'field1'", jsonObject.containsKey("field1"));
         Assert.assertEquals("Event does not contain value 'propval1'", "propval1", jsonObject.get("field1"));
 
         layout.setUserFields(prevUserData);
@@ -290,5 +290,33 @@ public class JSONEventLayoutV1Test {
     public void testDateFormat() {
         long timestamp = 1364844991207L;
         Assert.assertEquals("format does not produce expected output", "2013-04-01T19:36:31.207Z", JSONEventLayoutV1.dateFormat(timestamp));
+    }
+
+    @Test
+    public void testJSONEventHasUuid() throws Exception {
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        layout.setUuidField("@uuid");
+
+        logger.info("this is an info message with @uuid field");
+        String message = appender.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue("Event does not contain field '@uuid'" , jsonObject.containsKey("@uuid"));
+        Assert.assertNotNull("Field '@uuid' is null", jsonObject.get("@uuid"));
+
+        layout.setUuidField(null);
+    }
+
+    @Test
+    public void testJSONEventHasNotUuid() throws Exception {
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+
+        logger.info("this is an info message w/o @uuid field");
+        String message = appender.getMessages()[0];
+        Assert.assertTrue("Event is not valid JSON", JSONValue.isValidJsonStrict(message));
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertFalse("Event does not contain field '@uuid'" , jsonObject.containsKey("@uuid"));
     }
 }
