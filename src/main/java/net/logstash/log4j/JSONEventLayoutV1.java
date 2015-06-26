@@ -13,11 +13,13 @@ import org.apache.log4j.spi.ThrowableInformation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
 
 public class JSONEventLayoutV1 extends Layout {
 
     private boolean locationInfo = false;
     private String customUserFields;
+    private String uuidField;
 
     private boolean ignoreThrowable = false;
 
@@ -76,6 +78,10 @@ public class JSONEventLayoutV1 extends Layout {
          */
         logstashEvent.put("@version", version);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
+
+        if (getUuidField() != null) {
+            logstashEvent.put(getUuidField(), UUID.randomUUID().toString());
+        }
 
         /**
          * Extract and add fields from log4j config, if defined
@@ -161,6 +167,9 @@ public class JSONEventLayoutV1 extends Layout {
 
     public String getUserFields() { return customUserFields; }
     public void setUserFields(String userFields) { this.customUserFields = userFields; }
+
+    public String getUuidField() { return uuidField; }
+    public void setUuidField(String uuidField) { this.uuidField = uuidField; }
 
     public void activateOptions() {
         activeIgnoreThrowable = ignoreThrowable;

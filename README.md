@@ -120,6 +120,22 @@ Because of this, when adding support for the new format, `JSONEventLayoutV1` was
 
 Work has stopped on V0 but it won't be removed. No new features are added to V0 (custom UserFields for instance).
 
+# Uuid Field
+You can add a UUID to every log message in the log4jconfig:
+
+```xml
+<layout class="net.logstash.log4j.JSONEventLayoutV1" >
+  <param name="UuidField" value="@uuid" />
+</layout>
+```
+
+or
+
+```
+log4j.appender.RollingLog.layout=net.logstash.log4j.JSONEventLayoutV1
+log4j.appender.RollingLog.layout.UuidField=@uuid
+```
+
 # Custom User Fields
 As of version 1.6, you can now add your own metadata to the event in the form of comma-separated key:value pairs. This can be set in either the log4jconfig OR set on the java command-line:
 
