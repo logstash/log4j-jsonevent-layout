@@ -9,10 +9,12 @@ import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.log4j.MDC;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.lang.management.ManagementFactory;
 
 public class JSONEventLayoutV1 extends Layout {
 
@@ -37,10 +39,26 @@ public class JSONEventLayoutV1 extends Layout {
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
     public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
     public static final String ADDITIONAL_DATA_PROPERTY = "net.logstash.log4j.JSONEventLayoutV1.UserFields";
+    public static final String processId = getProcessId();
 
     public static String dateFormat(long timestamp) {
         return ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS.format(timestamp);
     }
+
+    /**
+     * Query the process ID of the running process.
+     *
+     * @return String the PID of the running process
+     */
+    private static String getProcessId() {
+        /**
+         * Since the PID of a process will never change during runtime, do this only once.
+         * The name returned from getRuntimeMXBean looks like "4567@<hostname>",
+         * since we are only intereseted in the PID, we strip everything else.
+         */
+         String name = ManagementFactory.getRuntimeMXBean().getName();
+         return name.replaceAll("@.*", "");
+     }
 
     /**
      * For backwards compatibility, the default is to generate location information
@@ -48,6 +66,16 @@ public class JSONEventLayoutV1 extends Layout {
      */
     public JSONEventLayoutV1() {
         this(true);
+        this.setProcessIdToMDC();
+    }
+
+    /**
+     * Add it to the log4j.MDC map so it gets part of the event
+     */
+    private static void setProcessIdToMDC() {
+        if (MDC.get("pid") == null) {
+            MDC.put("pid", processId);
+        }
     }
 
     /**
