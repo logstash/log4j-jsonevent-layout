@@ -12,6 +12,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created with IntelliJ IDEA.
  * User: jvincent
@@ -214,5 +218,37 @@ public class JSONEventLayoutV0Test {
     public void testDateFormat() {
         long timestamp = 1364844991207L;
         Assert.assertEquals("format does not produce expected output", "2013-04-01T19:36:31.207Z", JSONEventLayoutV0.dateFormat(timestamp));
+    }
+
+    @Test
+    public void testMessageObjectRendering() {
+        logger.info(new Serializable() {
+            String test = "TEST";
+            int testNum = 1123;
+        });
+        String message = appender.getMessages()[0];
+        System.out.println(message);
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+        Assert.assertTrue(atFields.containsKey("testNum"));
+        Assert.assertTrue(atFields.get("testNum") instanceof Integer);
+        Assert.assertEquals(atFields.get("testNum"), 1123);
+    }
+
+    @Test
+    public void testMessageObjectRenderingMap() {
+        Map testMap = new HashMap<String, Object>();
+        testMap.put("test", "TEST");
+        testMap.put("testNum", 12345);
+
+        logger.info(testMap);
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject atFields = (JSONObject) jsonObject.get("@fields");
+        Assert.assertTrue(atFields.containsKey("testNum"));
+        Assert.assertTrue(atFields.get("testNum") instanceof Integer);
+        Assert.assertEquals(atFields.get("testNum"), 12345);
     }
 }
