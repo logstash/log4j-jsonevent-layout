@@ -113,6 +113,11 @@ public class JSONEventLayoutV0 extends Layout {
 
         addFieldData("loggerName", loggingEvent.getLoggerName());
         addFieldData("mdc", mdc);
+        try {
+            addObjectFieldData(mdc);
+        } catch (Exception e) {
+        }
+
         addFieldData("ndc", ndc);
         addFieldData("level", loggingEvent.getLevel().toString());
         addFieldData("threadName", threadName);

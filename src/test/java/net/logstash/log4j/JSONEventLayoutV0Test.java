@@ -103,6 +103,7 @@ public class JSONEventLayoutV0Test {
         JSONObject atFields = (JSONObject) jsonObject.get("@fields");
         JSONObject mdcData = (JSONObject) atFields.get("mdc");
 
+        Assert.assertEquals("MDC is wrong","bar", atFields.get("foo"));
         Assert.assertEquals("MDC is wrong","bar", mdcData.get("foo"));
     }
 
