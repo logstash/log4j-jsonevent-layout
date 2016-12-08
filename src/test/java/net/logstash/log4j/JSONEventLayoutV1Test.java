@@ -12,7 +12,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -165,6 +167,7 @@ public class JSONEventLayoutV1Test {
         JSONObject jsonObject = (JSONObject) obj;
         JSONObject mdc = (JSONObject) jsonObject.get("mdc");
 
+        Assert.assertEquals("MDC is wrong","bar", jsonObject.get("foo"));
         Assert.assertEquals("MDC is wrong","bar", mdc.get("foo"));
     }
 
@@ -290,5 +293,37 @@ public class JSONEventLayoutV1Test {
     public void testDateFormat() {
         long timestamp = 1364844991207L;
         Assert.assertEquals("format does not produce expected output", "2013-04-01T19:36:31.207Z", JSONEventLayoutV1.dateFormat(timestamp));
+    }
+
+    @Test
+    public void testMessageObjectRendering() {
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        logger.info(new Serializable() {
+            String test = "TEST";
+            int testNum = 12345;
+        });
+        String message = appender.getMessages()[0];
+        System.out.println(message);
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue(jsonObject.containsKey("testNum"));
+        Assert.assertTrue(jsonObject.get("testNum") instanceof Integer);
+        Assert.assertEquals(jsonObject.get("testNum"), 12345);
+    }
+
+    @Test
+    public void testMessageObjectRenderingMap() {
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        Map testMap = new HashMap<String, Object>();
+        testMap.put("test", "TEST");
+        testMap.put("testNum", 12345);
+
+        logger.info(testMap);
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        Assert.assertTrue(jsonObject.containsKey("testNum"));
+        Assert.assertTrue(jsonObject.get("testNum") instanceof Integer);
+        Assert.assertEquals(jsonObject.get("testNum"), 12345);
     }
 }

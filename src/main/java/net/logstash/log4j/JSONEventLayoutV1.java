@@ -10,6 +10,9 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
@@ -103,7 +106,20 @@ public class JSONEventLayoutV1 extends Layout {
          * Now we start injecting our own stuff.
          */
         logstashEvent.put("source_host", hostname);
-        logstashEvent.put("message", loggingEvent.getRenderedMessage());
+
+        /**
+         * Check if msg is Map, if Map add fields to log events
+         */
+        Object messageObj = loggingEvent.getMessage();
+        if (messageObj instanceof Serializable && ! (messageObj instanceof String)) {
+            try {
+                addObjectFieldData(messageObj);
+            } catch (Exception ex) {
+                logstashEvent.put("message", loggingEvent.getRenderedMessage());
+            }
+        } else {
+            logstashEvent.put("message", loggingEvent.getRenderedMessage());
+        }
 
         if (loggingEvent.getThrowableInformation() != null) {
             final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
@@ -130,6 +146,11 @@ public class JSONEventLayoutV1 extends Layout {
 
         addEventData("logger_name", loggingEvent.getLoggerName());
         addEventData("mdc", mdc);
+        try {
+            addObjectFieldData(mdc);
+        } catch (Exception e) {
+        }
+
         addEventData("ndc", ndc);
         addEventData("level", loggingEvent.getLevel().toString());
         addEventData("thread_name", threadName);
@@ -182,6 +203,27 @@ public class JSONEventLayoutV1 extends Layout {
     private void addEventData(String keyname, Object keyval) {
         if (null != keyval) {
             logstashEvent.put(keyname, keyval);
+        }
+    }
+
+    private void addObjectFieldData(Object messageObj) throws Exception {
+        if (messageObj instanceof Map) {
+            Map messageObjMap = (Map) messageObj;
+            for (Object key : messageObjMap.keySet()) {
+                addEventData(key.toString(), messageObjMap.get(key));
+            }
+        } else {
+            Field[] fields = messageObj.getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                addEventData(field.getName(), field.get(messageObj));
+            }
+            Method[] methods = messageObj.getClass().getDeclaredMethods();
+            for (Method m : methods) {
+                if (m.getName().startsWith("get")) {
+                    addEventData(m.getName().substring(3), m.invoke(messageObj));
+                }
+            }
         }
     }
 }
