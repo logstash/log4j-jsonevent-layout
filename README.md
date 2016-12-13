@@ -84,6 +84,8 @@ If there is throwable information available in your event, it will be populated 
 
 Easy access to the exception class and exception message let's you work with those....easier.
 
+It is worth noting that the location information is set to true (which includes the line_number, class, method, and file) by default  for backwards compatability. Make sure this is your intention as this 'is an expensive operation and may impact performance' per the Log4j documentation.  
+
 # Sample XML configuration
 If you use the XML format for your log4j configuration (and there are valid reasons thanks to AsyncAppender - fml), changing your layout class for your appender would look like this
 
