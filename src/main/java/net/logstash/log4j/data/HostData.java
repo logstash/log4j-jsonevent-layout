@@ -3,8 +3,7 @@ package net.logstash.log4j.data;
 import java.net.UnknownHostException;
 
 public class HostData {
-
-    public String hostName;
+    private String hostName;
 
     public String getHostName() {
         return hostName;
