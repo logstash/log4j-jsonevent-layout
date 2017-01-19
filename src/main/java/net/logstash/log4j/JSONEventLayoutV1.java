@@ -1,7 +1,8 @@
 package net.logstash.log4j;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.logstash.log4j.data.HostData;
-import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Layout;
@@ -19,23 +20,14 @@ public class JSONEventLayoutV1 extends Layout {
     private boolean locationInfo = false;
     private String customUserFields;
 
-    private boolean ignoreThrowable = false;
+    private final String hostname = new HostData().getHostName();
+    private static final int VERSION = 1;
 
-    private boolean activeIgnoreThrowable = ignoreThrowable;
-    private String hostname = new HostData().getHostName();
-    private String threadName;
-    private long timestamp;
-    private String ndc;
-    private Map mdc;
-    private LocationInfo info;
-    private HashMap<String, Object> exceptionInformation;
-    private static Integer version = 1;
+    private static final ObjectMapper JSON_SERIALIZER = new ObjectMapper();
+    private Map<String, Object> logstashEvent;
 
-
-    private JSONObject logstashEvent;
-
-    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
+    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+    private static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
     public static final String ADDITIONAL_DATA_PROPERTY = "net.logstash.log4j.JSONEventLayoutV1.UserFields";
 
     public static String dateFormat(long timestamp) {
@@ -59,69 +51,74 @@ public class JSONEventLayoutV1 extends Layout {
         this.locationInfo = locationInfo;
     }
 
+    @Override
     public String format(LoggingEvent loggingEvent) {
-        threadName = loggingEvent.getThreadName();
-        timestamp = loggingEvent.getTimeStamp();
-        exceptionInformation = new HashMap<String, Object>();
-        mdc = loggingEvent.getProperties();
-        ndc = loggingEvent.getNDC();
+        String threadName = loggingEvent.getThreadName();
+        long timestamp = loggingEvent.getTimeStamp();
+        HashMap<String, Object> exceptionInformation = new HashMap<String, Object>();
+        Map mdc = loggingEvent.getProperties();
+        String ndc = loggingEvent.getNDC();
 
-        logstashEvent = new JSONObject();
+        logstashEvent = new HashMap<String, Object>();
         String whoami = this.getClass().getSimpleName();
 
-        /**
+        /*
          * All v1 of the event format requires is
          * "@timestamp" and "@version"
          * Every other field is arbitrary
          */
-        logstashEvent.put("@version", version);
+        logstashEvent.put("@version", VERSION);
         logstashEvent.put("@timestamp", dateFormat(timestamp));
 
-        /**
+        /*
          * Extract and add fields from log4j config, if defined
          */
         if (getUserFields() != null) {
-            String userFlds = getUserFields();
-            LogLog.debug("["+whoami+"] Got user data from log4j property: "+ userFlds);
-            addUserFields(userFlds);
+            String userFields = getUserFields();
+            LogLog.debug(String.format("[%s] Got user data from log4j property: %s", whoami, userFields));
+            addUserFields(userFields);
         }
 
-        /**
+        /*
          * Extract fields from system properties, if defined
          * Note that CLI props will override conflicts with log4j config
          */
-        if (System.getProperty(ADDITIONAL_DATA_PROPERTY) != null) {
+        String additionalDataSystemProperty = System.getProperty(ADDITIONAL_DATA_PROPERTY);
+        if (additionalDataSystemProperty != null) {
             if (getUserFields() != null) {
-                LogLog.warn("["+whoami+"] Loading UserFields from command-line. This will override any UserFields set in the log4j configuration file");
+                LogLog.warn(String.format("[%s] Loading UserFields from command-line. This will override any UserFields set in the log4j configuration file", whoami));
             }
-            String userFieldsProperty = System.getProperty(ADDITIONAL_DATA_PROPERTY);
-            LogLog.debug("["+whoami+"] Got user data from system property: " + userFieldsProperty);
-            addUserFields(userFieldsProperty);
+            LogLog.debug(String.format("[%s] Got user data from system property: %s", whoami, additionalDataSystemProperty));
+            addUserFields(additionalDataSystemProperty);
         }
 
-        /**
+        /*
          * Now we start injecting our own stuff.
          */
         logstashEvent.put("source_host", hostname);
         logstashEvent.put("message", loggingEvent.getRenderedMessage());
 
-        if (loggingEvent.getThrowableInformation() != null) {
-            final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
-            if (throwableInformation.getThrowable().getClass().getCanonicalName() != null) {
-                exceptionInformation.put("exception_class", throwableInformation.getThrowable().getClass().getCanonicalName());
+        final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
+        if (throwableInformation != null) {
+            Throwable throwable = throwableInformation.getThrowable();
+            String className = throwable.getClass().getCanonicalName();
+            if (className != null) {
+                exceptionInformation.put("exception_class", className);
             }
-            if (throwableInformation.getThrowable().getMessage() != null) {
-                exceptionInformation.put("exception_message", throwableInformation.getThrowable().getMessage());
+            String message = throwable.getMessage();
+            if (message != null) {
+                exceptionInformation.put("exception_message", message);
             }
-            if (throwableInformation.getThrowableStrRep() != null) {
-                String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
+            String[] throwableStrRep = throwableInformation.getThrowableStrRep();
+            if (throwableStrRep != null) {
+                String stackTrace = StringUtils.join(throwableStrRep, "\n");
                 exceptionInformation.put("stacktrace", stackTrace);
             }
             addEventData("exception", exceptionInformation);
         }
 
         if (locationInfo) {
-            info = loggingEvent.getLocationInformation();
+            LocationInfo info = loggingEvent.getLocationInformation();
             addEventData("file", info.getFileName());
             addEventData("line_number", info.getLineNumber());
             addEventData("class", info.getClassName());
@@ -134,11 +131,16 @@ public class JSONEventLayoutV1 extends Layout {
         addEventData("level", loggingEvent.getLevel().toString());
         addEventData("thread_name", threadName);
 
-        return logstashEvent.toString() + "\n";
+        try {
+            return JSON_SERIALIZER.writeValueAsString(logstashEvent) + "\n";
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    @Override
     public boolean ignoresThrowable() {
-        return ignoreThrowable;
+        return false;
     }
 
     /**
@@ -163,7 +165,6 @@ public class JSONEventLayoutV1 extends Layout {
     public void setUserFields(String userFields) { this.customUserFields = userFields; }
 
     public void activateOptions() {
-        activeIgnoreThrowable = ignoreThrowable;
     }
 
     private void addUserFields(String data) {
@@ -171,7 +172,7 @@ public class JSONEventLayoutV1 extends Layout {
             String[] pairs = data.split(",");
             for (String pair : pairs) {
                 String[] userField = pair.split(":", 2);
-                if (userField[0] != null) {
+                if (userField.length > 1 && userField[0] != null) {
                     String key = userField[0];
                     String val = userField[1];
                     addEventData(key, val);
