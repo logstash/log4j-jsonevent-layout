@@ -63,7 +63,12 @@ public class JSONEventLayoutV1 extends Layout {
         threadName = loggingEvent.getThreadName();
         timestamp = loggingEvent.getTimeStamp();
         exceptionInformation = new HashMap<String, Object>();
-        mdc = loggingEvent.getProperties();
+        mdc = new HashMap();
+        for (Object mdcObj : loggingEvent.getProperties().entrySet()) {
+            Map.Entry mapEntry = (Map.Entry) mdcObj;
+            String key = (String) mapEntry.getKey();
+            mdc.put(key.replaceAll("\\.", "_"), mapEntry.getValue());
+        }
         ndc = loggingEvent.getNDC();
 
         logstashEvent = new JSONObject();

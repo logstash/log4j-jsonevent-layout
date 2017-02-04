@@ -185,6 +185,19 @@ public class JSONEventLayoutV1Test {
     }
 
     @Test
+    public void testJSONEventLayoutEscapesMDCKeys() {
+        MDC.put("foo.bar","baz");
+        logger.warn("I should escape MDC field names in my log");
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject mdc = (JSONObject) jsonObject.get("mdc");
+
+        Assert.assertFalse("Event contains not escaped key", mdc.containsKey("foo.bar"));
+        Assert.assertTrue("Event does not contain escaped key", mdc.containsKey("foo_bar"));
+    }
+
+    @Test
     public void testJSONEventLayoutExceptions() {
         String exceptionMessage = new String("shits on fire, yo");
         logger.fatal("uh-oh", new IllegalArgumentException(exceptionMessage));
