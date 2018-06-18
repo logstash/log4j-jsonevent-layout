@@ -114,7 +114,7 @@ public class JSONEventLayoutV1 extends Layout {
                 exceptionInformation.put("exception_message", throwableInformation.getThrowable().getMessage());
             }
             if (throwableInformation.getThrowableStrRep() != null) {
-                String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
+                String [] stackTrace = throwableInformation.getThrowableStrRep();
                 exceptionInformation.put("stacktrace", stackTrace);
             }
             addEventData("exception", exceptionInformation);
