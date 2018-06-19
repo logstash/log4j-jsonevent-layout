@@ -1,6 +1,7 @@
 package net.logstash.log4j;
 
 import junit.framework.Assert;
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 import org.apache.log4j.*;
@@ -12,7 +13,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -195,6 +198,22 @@ public class JSONEventLayoutV1Test {
 
         Assert.assertEquals("Exception class missing", "java.lang.IllegalArgumentException", exceptionInformation.get("exception_class"));
         Assert.assertEquals("Exception exception message", exceptionMessage, exceptionInformation.get("exception_message"));
+    }
+
+    @Test
+    public void testJSONEventLayoutStackTraceIsArray(){
+        try{
+            int a = 2 / 0;
+        }
+        catch(Exception e){
+            logger.error("duh", e);
+            String msg  = appender.getMessages()[0];
+            Object object = JSONValue.parse(msg);
+            JSONObject jsonObject = (JSONObject) object;
+            JSONObject stacktrace = (JSONObject) jsonObject.get("exception");
+            JSONArray jsonArray = (JSONArray) stacktrace.get("stacktrace");
+            Assert.assertTrue("Parsed stacktrace is an array > 1", jsonArray.size() > 1);
+        }
     }
 
     @Test
