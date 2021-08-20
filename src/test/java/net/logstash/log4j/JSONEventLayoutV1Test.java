@@ -3,6 +3,7 @@ package net.logstash.log4j;
 import junit.framework.Assert;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.*;
 import org.apache.log4j.or.ObjectRenderer;
 import org.junit.After;
@@ -29,6 +30,7 @@ public class JSONEventLayoutV1Test {
     static final String userFieldsSingle = new String("field1:value1");
     static final String userFieldsMulti = new String("field2:value2,field3:value3");
     static final String userFieldsSingleProperty = new String("field1:propval1");
+    static final String userFieldsStacktrace = new String("stacktrace:5");
 
     static final String[] logstashFields = new String[]{
             "message",
@@ -195,6 +197,27 @@ public class JSONEventLayoutV1Test {
 
         Assert.assertEquals("Exception class missing", "java.lang.IllegalArgumentException", exceptionInformation.get("exception_class"));
         Assert.assertEquals("Exception exception message", exceptionMessage, exceptionInformation.get("exception_message"));
+    }
+
+    @Test
+    public void testJSONEventLayoutExceptionsWithUserFields() {
+
+        JSONEventLayoutV1 layout = (JSONEventLayoutV1) appender.getLayout();
+        String prevUserData = layout.getUserFields();
+        layout.setUserFields(userFieldsStacktrace);
+
+        String exceptionMessage = new String("shits on fire, yo");
+        logger.fatal("uh-oh", new IllegalArgumentException(exceptionMessage));
+        String message = appender.getMessages()[0];
+        Object obj = JSONValue.parse(message);
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject exceptionInformation = (JSONObject) jsonObject.get("exception");
+
+        Assert.assertEquals("Exception class missing", "java.lang.IllegalArgumentException", exceptionInformation.get("exception_class"));
+        Assert.assertEquals("Exception exception message", exceptionMessage, exceptionInformation.get("exception_message"));
+        Assert.assertEquals("The number of lines in stacktrace is correct", StringUtils.countMatches((String) exceptionInformation.get("stacktrace"), "\n"), Integer.parseInt(userFieldsStacktrace.substring(userFieldsStacktrace.indexOf(":")+1))-1);
+
+        layout.setUserFields(prevUserData);
     }
 
     @Test
