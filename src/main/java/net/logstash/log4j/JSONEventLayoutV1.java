@@ -10,6 +10,7 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
@@ -115,6 +116,16 @@ public class JSONEventLayoutV1 extends Layout {
             }
             if (throwableInformation.getThrowableStrRep() != null) {
                 String stackTrace = StringUtils.join(throwableInformation.getThrowableStrRep(), "\n");
+                /**
+                 * to shorten stack trace via user fields in the form "stacktrace:10", where 10 - the number of stacktrace lines to print
+                 */
+                if (logstashEvent.get("stacktrace") != null) {
+                    int stacktraceLinesLimit = Integer.parseInt((String) logstashEvent.get("stacktrace"));
+                    if (stacktraceLinesLimit < throwableInformation.getThrowableStrRep().length)
+                        stackTrace = StringUtils.join(Arrays.copyOfRange(throwableInformation.getThrowableStrRep(), 0, stacktraceLinesLimit), "\n");
+                }
+
+
                 exceptionInformation.put("stacktrace", stackTrace);
             }
             addEventData("exception", exceptionInformation);
