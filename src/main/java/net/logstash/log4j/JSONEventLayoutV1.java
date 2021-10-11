@@ -13,6 +13,7 @@ import org.apache.log4j.spi.ThrowableInformation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.Calendar;
 
 public class JSONEventLayoutV1 extends Layout {
 
@@ -34,8 +35,8 @@ public class JSONEventLayoutV1 extends Layout {
 
     private JSONObject logstashEvent;
 
-    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", UTC);
+    public static final TimeZone LOCAL_TIME_ZONE = Calendar.getInstance().getTimeZone();
+    public static final FastDateFormat ISO_DATETIME_TIME_ZONE_FORMAT_WITH_MILLIS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", LOCAL_TIME_ZONE);
     public static final String ADDITIONAL_DATA_PROPERTY = "net.logstash.log4j.JSONEventLayoutV1.UserFields";
 
     public static String dateFormat(long timestamp) {
